@@ -775,12 +775,11 @@ function renderOutlets(){document.getElementById("outTable").innerHTML=db.outlet
 function updateRealtimeClock(){let now=new Date();let time=now.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});let date=now.toLocaleDateString("id-ID",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});let t=document.getElementById("liveTime"),d=document.getElementById("liveDate");if(t)t.textContent=time;if(d)d.textContent=date}
 updateRealtimeClock();setInterval(updateRealtimeClock,1000);
 window.addEventListener("online",()=>{if(!cloudReady)initRealtime();});
-loadFirebaseSDK()
-  .then(()=>initRealtime())
-  .catch(err=>{
-    console.error("Firebase SDK:",err);
-    setCloudStatus("🔴 Firebase SDK gagal dimuat","warn");
-  });
+if(typeof firebase !== "undefined" && firebase.firestore){
+  initRealtime();
+}else{
+  setCloudStatus("🔴 Firebase SDK lokal gagal dimuat","warn");
+}
 function renderAll(){if(!session)return;mountFilters();wireFilterCascades();renderDashboard();renderAttendance();renderApproval();renderEmployees();renderOutlets();renderStock();renderInventory();renderUsers();renderWhatsAppSettings();if(document.getElementById("assistantResult").innerHTML==="")generateAssistant()}
 
 </script>

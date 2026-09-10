@@ -831,6 +831,200 @@ function shareWhatsApp(){
   window.open(url,"_blank","noopener,noreferrer");
 }
 
+
+/* =========================
+   🤖 BOT WHATSAPP OTOMATIS
+   ========================= */
+
+let waBotTimer=null;
+let waLastAutoSent="";
+
+function getWhatsAppSettings(){
+  return db.whatsapp || {
+    groupName:"Grup Operasional Yogulato",
+    groupLink:"",
+    sendTime:"15:30",
+    lateAfter:"09:00",
+    autoEnabled:false,
+    webhook:"",
+    format:"all",
+    lastSentKey:""
+  };
+}
+
+function getWhatsAppReportText(){
+  return buildWhatsAppReport(today());
+}
+
+async function sendWhatsAppBotReport(force=false){
+  const s=getWhatsAppSettings();
+
+  if(!s.webhook){
+    console.warn("Webhook Bot WA belum diisi.");
+    return false;
+  }
+
+  const date=today();
+  const key=date+"_"+(s.sendTime||"15:30");
+
+  if(!force && s.lastSentKey===key){
+    return false;
+  }
+
+  const text=getWhatsAppReportText();
+
+  const payload={
+    groupName:s.groupName||"Grup Operasional Yogulato",
+    groupLink:s.groupLink||"",
+    message:text,
+    date:date,
+    sendTime:s.sendTime||"15:30",
+    format:s.format||"all",
+    source:"Yogulato ERP",
+    type:"daily_report"
+  };
+
+  try{
+    setWhatsAppBotStatus("🟡 Mengirim laporan ke Bot WhatsApp...");
+
+    const response=await fetch(s.webhook,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(payload)
+    });
+
+    if(!response.ok){
+      throw new Error("HTTP "+response.status);
+    }
+
+    db.whatsapp={
+      ...s,
+      lastSentKey:key
+    };
+
+    waLastAutoSent=key;
+    save();
+
+    setWhatsAppBotStatus("🟢 Laporan berhasil dikirim ke webhook Bot WA.");
+
+    return true;
+
+  }catch(err){
+    console.error("WhatsApp Bot:",err);
+    setWhatsAppBotStatus("🔴 Gagal kirim Bot WA: "+err.message);
+    return false;
+  }
+}
+
+function setWhatsAppBotStatus(text){
+  const el=document.getElementById("waAutoStatus");
+
+  if(!el)return;
+
+  el.innerHTML=
+    '<span class="wa-status-dot"></span><span>'+esc(text)+'</span>';
+}
+
+function checkWhatsAppBotSchedule(){
+  const s=getWhatsAppSettings();
+
+  if(!s.autoEnabled)return;
+  if(!s.webhook)return;
+
+  const now=new Date();
+
+  const currentTime=
+    String(now.getHours()).padStart(2,"0")+":"+
+    String(now.getMinutes()).padStart(2,"0");
+
+  const targetTime=s.sendTime||"15:30";
+
+  if(currentTime!==targetTime)return;
+
+  const key=today()+"_"+targetTime;
+
+  if(waLastAutoSent===key)return;
+  if(s.lastSentKey===key)return;
+
+  sendWhatsAppBotReport(false);
+}
+
+function startWhatsAppBotScheduler(){
+
+  if(waBotTimer){
+    clearInterval(waBotTimer);
+  }
+
+  checkWhatsAppBotSchedule();
+
+  waBotTimer=setInterval(()=>{
+    checkWhatsAppBotSchedule();
+  },30000);
+
+  console.log("🤖 WhatsApp Bot Scheduler aktif.");
+}
+
+
+/* Test webhook */
+async function testWhatsAppBot(){
+
+  const s=getWhatsAppSettings();
+
+  if(!s.webhook){
+    alert("Isi Webhook Bot WA terlebih dahulu.");
+    return;
+  }
+
+  const text=getWhatsAppReportText();
+
+  const payload={
+    groupName:s.groupName||"Grup Operasional Yogulato",
+    groupLink:s.groupLink||"",
+    message:text,
+    date:today(),
+    sendTime:s.sendTime||"15:30",
+    format:s.format||"all",
+    source:"Yogulato ERP",
+    type:"test"
+  };
+
+  try{
+
+    setWhatsAppBotStatus("🟡 Test webhook...");
+
+    const response=await fetch(s.webhook,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(payload)
+    });
+
+    if(!response.ok){
+      throw new Error("HTTP "+response.status);
+    }
+
+    setWhatsAppBotStatus("🟢 Test webhook berhasil.");
+
+    alert("✅ Test Bot WhatsApp berhasil dikirim ke webhook.");
+
+  }catch(err){
+
+    console.error(err);
+
+    setWhatsAppBotStatus(
+      "🔴 Test gagal: "+err.message
+    );
+
+    alert(
+      "❌ Test Bot WhatsApp gagal.\n\n"+
+      err.message
+    );
+  }
+}
+
 function exportXLSX(name,sheets){if(typeof XLSX==="undefined"){alert("Library Excel belum termuat. Pastikan internet aktif.");return}let wb=XLSX.utils.book_new();Object.entries(sheets).forEach(([n,rows])=>{let ws=XLSX.utils.json_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,n.slice(0,31))});XLSX.writeFile(wb,name)}
 function exportAttendance(){let f=getF("att"),rows=db.attendance.filter(a=>{let o=out(a.outlet);return inDateFilter(a.date,f)&&(!f.region||o?.region===f.region)&&(!f.trade||o?.trade===f.trade)&&(!f.outlet||a.outlet===f.outlet)}).map(a=>{let e=emp(a.employee),o=oi(a.outlet);return {"Tanggal":a.date,"Jam":a.time,"Karyawan":e?.name||"-","Wilayah":o.region,"Modern Trade":o.trade,"Outlet":o.name,"Metode":a.method,"Lokasi Terverifikasi":a.locationVerified?"Ya":"Tidak","Jarak Meter":a.distance?Math.round(a.distance):"","Status":a.status,"Approved By":a.approvedBy||""}});exportXLSX("Rekap_Absensi_Sour_Sally.xlsx",{"Absensi":rows})}
 function exportStock(){let f=getF("stock"),rows=db.stock.filter(s=>{let o=out(s.outlet);return s.status==="POSTED"&&inDateFilter(s.date,f)&&(!f.region||o?.region===f.region)&&(!f.trade||o?.trade===f.trade)&&(!f.outlet||s.outlet===f.outlet)}).map(s=>{let o=oi(s.outlet);return {"Tanggal":s.date,"Jenis":s.type,"Wilayah":o.region,"Modern Trade":o.trade,"Outlet":o.name,"Produk":s.product,"Qty":s.qty,"Status":s.status,"Catatan":s.note||""}});exportXLSX("Rekap_Stock_IN_OUT_Sour_Sally.xlsx",{"Stock_IN_OUT":rows})}
@@ -847,6 +1041,8 @@ if(typeof firebase !== "undefined" && firebase.firestore){
 }else{
   setCloudStatus("🔴 Firebase SDK lokal gagal dimuat","warn");
 }
+
+  startWhatsAppBotScheduler();
 function renderAll(){if(!session)return;mountFilters();wireFilterCascades();renderDashboard();renderAttendance();renderApproval();renderEmployees();renderOutlets();renderStock();renderInventory();renderUsers();if(document.getElementById("assistantResult").innerHTML==="")generateAssistant()}
 </script>
 </body>

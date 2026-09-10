@@ -816,7 +816,6 @@ function saveWhatsAppSettings(){
   };
 
   save();
-  renderWhatsAppSettings();
   alert("Pengaturan WhatsApp berhasil disimpan.");
 }
 
@@ -848,8 +847,7 @@ if(typeof firebase !== "undefined" && firebase.firestore){
 }else{
   setCloudStatus("🔴 Firebase SDK lokal gagal dimuat","warn");
 }
-function renderAll(){if(!session)return;mountFilters();wireFilterCascades();renderDashboard();renderAttendance();renderApproval();renderEmployees();renderOutlets();renderStock();renderInventory();renderUsers();renderWhatsAppSettings();if(document.getElementById("assistantResult").innerHTML==="")generateAssistant()}
-
+function renderAll(){if(!session)return;mountFilters();wireFilterCascades();renderDashboard();renderAttendance();renderApproval();renderEmployees();renderOutlets();renderStock();renderInventory();renderUsers();if(document.getElementById("assistantResult").innerHTML==="")generateAssistant()}
 </script>
 </body>
 </html>

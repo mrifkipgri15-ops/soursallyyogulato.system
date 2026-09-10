@@ -1669,18 +1669,54 @@ function renderWhatsAppSettings(){
 }
 
 function saveWhatsAppSettings(){
-  db.whatsapp={
-    groupName:document.getElementById("waGroupName")?.value||"Grup Operasional Yogulato",
-    groupLink:document.getElementById("waGroupLink")?.value||"",
-    sendTime:document.getElementById("waSendTime")?.value||"15:30",
-    lateAfter:document.getElementById("waLateAfter")?.value||"09:00",
-    autoEnabled:!!document.getElementById("waAutoEnabled")?.checked,
-    webhook:document.getElementById("waWebhook")?.value||"",
-    format:document.getElementById("waFormat")?.value||"all"
+
+  db.whatsapp = {
+    ...(db.whatsapp || {}),
+
+    groupName:
+      document.getElementById("waGroupName")?.value ||
+      "Grup Operasional Yogulato",
+
+    groupLink:
+      document.getElementById("waGroupLink")?.value ||
+      "",
+
+    groupId:
+      "120363364628064450@g.us",
+
+    sendTime:
+      document.getElementById("waSendTime")?.value ||
+      "15:30",
+
+    lateAfter:
+      document.getElementById("waLateAfter")?.value ||
+      "09:00",
+
+    autoEnabled:
+      !!document.getElementById("waAutoEnabled")?.checked,
+
+    webhook:
+      document.getElementById("waWebhook")?.value ||
+      "",
+
+    format:
+      document.getElementById("waFormat")?.value ||
+      "all",
+
+    lastSentKey:
+      db.whatsapp?.lastSentKey || ""
   };
 
   save();
-  alert("Pengaturan WhatsApp berhasil disimpan.");
+
+  // Simpan ulang setelah proses save selesai
+  setTimeout(() => {
+    if(typeof queueCloudSync === "function"){
+      queueCloudSync();
+    }
+  }, 300);
+
+  alert("✅ Pengaturan WhatsApp berhasil disimpan.");
 }
 
 async function testWhatsAppReport(){
@@ -1702,15 +1738,43 @@ let waBotTimer=null;
 let waLastAutoSent="";
 
 function getWhatsAppSettings(){
-  return db.whatsapp || {
-    groupName:"Grup Operasional Yogulato",
-    groupLink:"",
-    sendTime:"15:30",
-    lateAfter:"09:00",
-    autoEnabled:false,
-    webhook:"",
-    format:"all",
-    lastSentKey:""
+
+  return {
+    groupName:
+      db.whatsapp?.groupName ||
+      "Grup Operasional Yogulato",
+
+    groupLink:
+      db.whatsapp?.groupLink ||
+      "",
+
+    groupId:
+      db.whatsapp?.groupId ||
+      "120363364628064450@g.us",
+
+    sendTime:
+      db.whatsapp?.sendTime ||
+      "15:30",
+
+    lateAfter:
+      db.whatsapp?.lateAfter ||
+      "09:00",
+
+    autoEnabled:
+      !!db.whatsapp?.autoEnabled,
+
+    webhook:
+      db.whatsapp?.webhook ||
+      "",
+
+    format:
+      db.whatsapp?.format ||
+      "all",
+
+    lastSentKey:
+      db.whatsapp?.lastSentKey ||
+      ""
+
   };
 }
 

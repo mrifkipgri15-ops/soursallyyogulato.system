@@ -1623,51 +1623,83 @@ function generateAssistant(){
   `;
   el.innerHTML=html;
 }
+  
 function renderWhatsAppSettings(){
-  const s=db.whatsapp||{
-    groupName:"Grup Operasional Yogulato",
-    groupLink:"",
-    sendTime:"15:30",
-    lateAfter:"09:00",
-    autoEnabled:false,
-    webhook:"",
-    format:"all"
+
+  const localData =
+    JSON.parse(localStorage.getItem("ssy_erp_v4") || "{}");
+
+  const s = {
+    ...(localData.whatsapp || {}),
+    ...(db.whatsapp || {})
   };
 
   const set=(id,val)=>{
     const el=document.getElementById(id);
-    if(el) el.value=val??"";
+    if(el) el.value=val ?? "";
   };
 
-  set("waGroupName",s.groupName);
-  set("waGroupLink",s.groupLink);
-  set("waSendTime",s.sendTime||"15:30");
-  set("waLateAfter",s.lateAfter||"09:00");
-  set("waWebhook",s.webhook);
-  set("waFormat",s.format||"all");
+  set(
+    "waGroupName",
+    s.groupName || "Grup Operasional Yogulato"
+  );
+
+  set(
+    "waGroupLink",
+    s.groupLink || ""
+  );
+
+  set(
+    "waSendTime",
+    s.sendTime || "15:30"
+  );
+
+  set(
+    "waLateAfter",
+    s.lateAfter || "09:00"
+  );
+
+  set(
+    "waWebhook",
+    s.webhook || ""
+  );
+
+  set(
+    "waFormat",
+    s.format || "all"
+  );
 
   const auto=document.getElementById("waAutoEnabled");
-  if(auto) auto.checked=!!s.autoEnabled;
+
+  if(auto){
+    auto.checked=!!s.autoEnabled;
+  }
 
   const preview=document.getElementById("waPreviewGroup");
+
   if(preview){
-    preview.textContent=s.groupName||"Grup Operasional Yogulato";
+    preview.textContent=
+      s.groupName ||
+      "Grup Operasional Yogulato";
   }
 
   const status=document.getElementById("waAutoStatus");
+
   if(status){
     status.innerHTML=s.autoEnabled
       ? '<span class="wa-status-dot"></span><span>🟢 Pengiriman otomatis aktif.</span>'
       : '<span class="wa-status-dot"></span><span>Jadwal belum diaktifkan.</span>';
   }
 
-  const previewReport=document.getElementById("waPreviewReport");
-  if(previewReport){
-    const text=buildWhatsAppReport(today());
-    previewReport.textContent=text;
-  }
-}
+  const previewReport=
+    document.getElementById("waPreviewReport");
 
+  if(previewReport){
+    previewReport.textContent=
+      buildWhatsAppReport(today());
+}
+  
+}
 function saveWhatsAppSettings(){
 
   db.whatsapp = {

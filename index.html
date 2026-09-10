@@ -1683,10 +1683,8 @@ function saveWhatsAppSettings(){
   alert("Pengaturan WhatsApp berhasil disimpan.");
 }
 
-function testWhatsAppReport(){
-  const text=buildWhatsAppReport(today());
-  const url="https://wa.me/?text="+encodeURIComponent(text);
-  window.open(url,"_blank","noopener,noreferrer");
+async function testWhatsAppReport(){
+  return await sendWhatsAppBotReport(true);
 }
 
 function shareWhatsApp(){
@@ -1844,16 +1842,17 @@ async function sendWhatsAppBotReport(force=false){
 
   const text=getWhatsAppReportText();
 
-  const payload={
-    groupName:s.groupName||"Grup Operasional Yogulato",
-    groupLink:s.groupLink||"",
-    message:text,
-    date:date,
-    sendTime:s.sendTime||"15:30",
-    format:s.format||"all",
-    source:"Yogulato ERP",
-    type:"daily_report"
-  };
+const payload={
+  target:"120363364628064450@g.us",
+  groupName:s.groupName||"Grup Operasional Yogulato",
+  groupLink:s.groupLink||"",
+  message:text,
+  date:date,
+  sendTime:s.sendTime||"15:30",
+  format:s.format||"all",
+  source:"Yogulato ERP",
+  type:"daily_report"
+};
 
   try{
     setWhatsAppBotStatus("🟡 Mengirim laporan ke Bot WhatsApp...");

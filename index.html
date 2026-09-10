@@ -726,9 +726,25 @@ function mergeSnapshot(name,changes){
       else if(old<0)target.push(val);
     }else if(name==="minimum"){
       if(ch.type==="removed") delete db.minimum[d.key]; else db.minimum[d.key]=Number(d.value||0);
-    }else if(name==="settings"){
-      if(ch.type!=="removed"){db.whatsapp=localFromDoc(name,d)}
-    }else{
+  }else if(name==="settings"){
+
+  if(ch.type!=="removed"){
+
+    const incoming=localFromDoc(name,d);
+
+    db.whatsapp={
+      ...(db.whatsapp||{}),
+      ...incoming
+    };
+
+    localStorage.setItem(
+      "ssy_erp_v4",
+      JSON.stringify(db)
+    );
+
+  }
+
+}else{
       const target=db[name]||[];
       const idx=target.findIndex(v=>v.id===d.id);
       if(ch.type==="removed"){if(idx>=0)target.splice(idx,1)}

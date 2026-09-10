@@ -1714,6 +1714,112 @@ function getWhatsAppSettings(){
     format:"all",
     lastSentKey:""
   };
+  
+  function buildWhatsAppReport(date){
+
+  const d=assistantData("assistant");
+  const nf=n=>Number(n||0).toLocaleString("id-ID");
+
+  let text="📋 *LAPORAN OPERASIONAL YOGULATO*\n";
+  text+="📅 "+date+"\n";
+  text+="━━━━━━━━━━━━━━━━━━\n\n";
+
+  text+="📦 *STOCK*\n";
+  text+="• Stock IN : "+nf(d.ins)+" pcs\n";
+  text+="• Stock OUT : "+nf(d.outsQty)+" pcs\n\n";
+
+  text+="👥 *KEHADIRAN*\n";
+  text+="• Hadir resmi : "+nf(d.present.size)+" orang\n";
+  text+="• Belum hadir : "+nf(d.missing.length)+" orang\n";
+  text+="• Pending manual : "+nf(d.pend.length)+" orang\n\n";
+
+  text+="🏪 *REKAP OUTLET*\n\n";
+
+  const refillByOutlet={};
+
+  d.ref.forEach(x=>{
+
+    const oid=x.o.id;
+
+    if(!refillByOutlet[oid]){
+      refillByOutlet[oid]={
+        outlet:x.o,
+        items:[]
+      };
+    }
+
+    refillByOutlet[oid].items.push(x);
+
+  });
+
+  const refillOutlets=Object.values(refillByOutlet);
+
+  d.selectedOutlets.forEach(o=>{
+
+    text+="📍 *"+(o.name||o.nama||"Outlet")+"*\n";
+    text+="   "+(o.region||"-")+" → "+(o.trade||"-")+"\n";
+
+    const refill=refillOutlets.find(
+      x=>x.outlet.id===o.id
+    );
+
+    if(refill){
+
+      text+="   ⚠️ *PERLU REFILL*\n";
+
+      refill.items.forEach(x=>{
+        text+="   • "+(x.p.name||x.p.nama||"-")+
+          " | Stock "+nf(x.stock)+
+          " | Min "+nf(x.min)+" pcs\n";
+      });
+
+    }else{
+
+      text+="   ✅ Stock aman\n";
+
+    }
+
+    text+="\n";
+
+  });
+
+  if(!d.selectedOutlets.length){
+    text+="Tidak ada outlet sesuai filter.\n\n";
+  }
+
+  text+="━━━━━━━━━━━━━━━━━━\n";
+
+  if(refillOutlets.length){
+
+    text+="🚨 *TINDAKAN*\n";
+    text+="Segera cek "+nf(refillOutlets.length)+
+      " outlet yang membutuhkan refill.\n";
+
+  }else{
+
+    text+="✅ *TINDAKAN*\n";
+    text+="Tidak ada outlet yang membutuhkan refill.\n";
+
+  }
+
+  if(d.missing.length){
+
+    text+="👥 Cek "+nf(d.missing.length)+
+      " karyawan yang belum hadir.\n";
+
+  }
+
+  if(d.pend.length){
+
+    text+="⏳ Ada "+nf(d.pend.length)+
+      " attendance manual menunggu approval.\n";
+
+  }
+
+  text+="\n🤖 *Yogulato ERP Bot*";
+
+  return text;
+    
 }
 
 function getWhatsAppReportText(){

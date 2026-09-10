@@ -2037,8 +2037,15 @@ async function testWhatsAppBot(){
       body:JSON.stringify(payload)
     });
 
-    if(!response.ok){
-      throw new Error("HTTP "+response.status);
+const result=await response.json();
+
+if(!response.ok || result.status===false){
+  throw new Error(
+    result.detail ||
+    result.reason ||
+    result.message ||
+    "Fonnte gagal mengirim pesan"
+  );
     }
 
     setWhatsAppBotStatus("🟢 Test webhook berhasil.");

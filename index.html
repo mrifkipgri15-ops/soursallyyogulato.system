@@ -1138,13 +1138,6 @@ function generateAssistant(){
 
   });
 
-  Object.values(tradeMap).forEach(x=>{
-
-    const outlets=d.selectedOutlets.filter(o=>o.trade===
-      Object.keys(tradeMap).find(k=>tradeMap[k]===x)
-    );
-
-  });
 
   /* =========================
      REKAP WILAYAH
@@ -1628,6 +1621,8 @@ function generateAssistant(){
       </div>
     </section>
   `;
+  el.innerHTML=html;
+}
 
 
   el.innerHTML=html;

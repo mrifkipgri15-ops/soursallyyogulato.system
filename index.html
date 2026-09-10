@@ -1645,10 +1645,55 @@ function renderWhatsAppSettings(){
   const localData =
     JSON.parse(localStorage.getItem("ssy_erp_v4") || "{}");
 
-  const s = {
-    ...(localData.whatsapp || {}),
-    ...(db.whatsapp || {})
-  };
+const localWA=localData.whatsapp||{};
+const cloudWA=db.whatsapp||{};
+
+const s={
+  groupName:
+    cloudWA.groupName ||
+    localWA.groupName ||
+    "Grup Operasional Yogulato",
+
+  groupLink:
+    cloudWA.groupLink ||
+    localWA.groupLink ||
+    "",
+
+  groupId:
+    cloudWA.groupId ||
+    localWA.groupId ||
+    "120363364628064450@g.us",
+
+  sendTime:
+    cloudWA.sendTime ||
+    localWA.sendTime ||
+    "15:30",
+
+  lateAfter:
+    cloudWA.lateAfter ||
+    localWA.lateAfter ||
+    "09:00",
+
+  autoEnabled:
+    cloudWA.autoEnabled ??
+    localWA.autoEnabled ??
+    false,
+
+  webhook:
+    cloudWA.webhook ||
+    localWA.webhook ||
+    "",
+
+  format:
+    cloudWA.format ||
+    localWA.format ||
+    "all",
+
+  lastSentKey:
+    cloudWA.lastSentKey ||
+    localWA.lastSentKey ||
+    ""
+};
 
   const set=(id,val)=>{
     const el=document.getElementById(id);

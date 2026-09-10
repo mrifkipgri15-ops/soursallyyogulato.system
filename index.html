@@ -5,8 +5,53 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Yogulato Operational System</title>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@9.23.3/compat/firebase-app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@9.23.3/compat/firebase-firestore.js"></script>
+<script>
+window.firebaseSDKReady = false;
+
+function loadScript(src){
+  return new Promise((resolve,reject)=>{
+    const s=document.createElement("script");
+    s.src=src;
+    s.onload=()=>resolve();
+    s.onerror=()=>reject(new Error("Gagal memuat "+src));
+    document.head.appendChild(s);
+  });
+}
+
+async function loadFirebaseSDK(){
+  const cdns=[
+    [
+      "https://www.gstatic.com/firebasejs/9.23.3/firebase-app-compat.js",
+      "https://www.gstatic.com/firebasejs/9.23.3/firebase-firestore-compat.js"
+    ],
+    [
+      "https://cdn.jsdelivr.net/npm/firebase@9.23.3/compat/firebase-app.js",
+      "https://cdn.jsdelivr.net/npm/firebase@9.23.3/compat/firebase-firestore.js"
+    ],
+    [
+      "https://unpkg.com/firebase@9.23.3/compat/firebase-app.js",
+      "https://unpkg.com/firebase@9.23.3/compat/firebase-firestore.js"
+    ]
+  ];
+
+  for(const pair of cdns){
+    try{
+      await loadScript(pair[0]);
+      await loadScript(pair[1]);
+
+      if(typeof firebase!=="undefined" && firebase.firestore){
+        window.firebaseSDKReady=true;
+        console.log("Firebase SDK berhasil dimuat:",pair[0]);
+        return true;
+      }
+    }catch(e){
+      console.warn("CDN Firebase gagal, mencoba CDN berikutnya:",e);
+    }
+  }
+
+  throw new Error("SEMUA_CDN_FIREBASE_GAGAL");
+}
+</script>
 <style>
 :root{--bg:#fffaf6;--card:#fff;--pink:#f6cadb;--pink2:#ffe9f1;--green:#cfe9dc;--green2:#e9f7f0;--lav:#ddd5ef;--yellow:#fff0bd;--red:#f5c5ce;--ink:#403941;--muted:#817680;--line:#eee3e8;--shadow:0 10px 30px rgba(70,45,65,.08)}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Arial,sans-serif}.hidden{display:none!important}
@@ -726,7 +771,12 @@ function renderOutlets(){document.getElementById("outTable").innerHTML=db.outlet
 function updateRealtimeClock(){let now=new Date();let time=now.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});let date=now.toLocaleDateString("id-ID",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});let t=document.getElementById("liveTime"),d=document.getElementById("liveDate");if(t)t.textContent=time;if(d)d.textContent=date}
 updateRealtimeClock();setInterval(updateRealtimeClock,1000);
 window.addEventListener("online",()=>{if(!cloudReady)initRealtime();});
-initRealtime();
+loadFirebaseSDK()
+  .then(()=>initRealtime())
+  .catch(err=>{
+    console.error("Firebase SDK:",err);
+    setCloudStatus("🔴 Firebase SDK gagal dimuat","warn");
+  });
 function renderAll(){if(!session)return;mountFilters();wireFilterCascades();renderDashboard();renderAttendance();renderApproval();renderEmployees();renderOutlets();renderStock();renderInventory();renderUsers();renderWhatsAppSettings();if(document.getElementById("assistantResult").innerHTML==="")generateAssistant()}
 
 </script>

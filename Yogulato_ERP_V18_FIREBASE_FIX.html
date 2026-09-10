@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yogulato Operational System</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script>
+window.firebaseSDKReady = false;
+
+function loadScript(src){
+  return new Promise((resolve,reject)=>{
+    const s=document.createElement("script");
+    s.src=src;
+    s.onload=()=>resolve();
+    s.onerror=()=>reject(new Error("Gagal memuat "+src));
+    document.head.appendChild(s);
+  });
+}
+
+async function loadFirebaseSDK(){
+  const cdns=[
+    [
+      "https://www.gstatic.com/firebasejs/9.23.3/firebase-app-compat.js",
+      "https://www.gstatic.com/firebasejs/9.23.3/firebase-firestore-compat.js"
+    ],
+    [
+      "https://cdn.jsdelivr.net/npm/firebase@9.23.3/compat/firebase-app.js",
+      "https://cdn.jsdelivr.net/npm/firebase@9.23.3/compat/firebase-firestore.js"
+    ],
+    [
+      "https://unpkg.com/firebase@9.23.3/compat/firebase-app.js",
+      "https://unpkg.com/firebase@9.23.3/compat/firebase-firestore.js"
+    ]
+  ];
+
+  for(const pair of cdns){
+    try{
+      await loadScript(pair[0]);
+      await loadScript(pair[1]);
+
+      if(typeof firebase!=="undefined" && firebase.firestore){
+        window.firebaseSDKReady=true;
+        console.log("Firebase SDK berhasil dimuat:",pair[0]);
+        return true;
+      }
+    }catch(e){
+      console.warn("CDN Firebase gagal, mencoba CDN berikutnya:",e);
+    }
+  }
+
+  throw new Error("SEMUA_CDN_FIREBASE_GAGAL");
+}
+</script>
+<style>
+:root{--bg:#fffaf6;--card:#fff;--pink:#f6cadb;--pink2:#ffe9f1;--green:#cfe9dc;--green2:#e9f7f0;--lav:#ddd5ef;--yellow:#fff0bd;--red:#f5c5ce;--ink:#403941;--muted:#817680;--line:#eee3e8;--shadow:0 10px 30px rgba(70,45,65,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Arial,sans-serif}.hidden{display:none!important}
+button,input,select,textarea{font:inherit}button{border:0;cursor:pointer}.btn{padding:10px 13px;border-radius:11px;font-weight:800}.primary{background:var(--pink)}.green{background:var(--green)}.lav{background:var(--lav)}.yellow{background:var(--yellow)}.danger{background:var(--red)}.ghost{background:#f5f0f3}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,var(--pink2),var(--green2))}.login-card{width:min(440px,100%);background:white;padding:34px;border-radius:28px;box-shadow:var(--shadow);text-align:center}.logo{font-weight:950;font-size:29px}.logo small{display:block;font-size:12px;color:var(--muted);margin-top:5px}.field{margin:11px 0}.field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:11px;background:#fff;outline:none}.field textarea{min-height:80px;resize:vertical}
+.app{min-height:100vh;display:flex}.sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;background:#fff;border-right:1px solid var(--line);padding:20px;overflow:auto}.brand{font-weight:950;font-size:19px;margin-bottom:20px}.brand small{display:block;font-size:10px;color:var(--muted);margin-top:3px}.nav button{width:100%;text-align:left;padding:11px;margin:3px 0;border-radius:11px;background:transparent;font-weight:750}.nav button.active,.nav button:hover{background:var(--pink2)}
+.main{margin-left:250px;width:calc(100% - 250px);padding:22px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:17px}.top h1{font-size:25px;margin:0}.user{background:#fff;padding:10px 13px;border-radius:13px;box-shadow:var(--shadow);font-size:12px}
+.page{display:none}.page.active{display:block}.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}.card{background:#fff;border-radius:17px;padding:16px;box-shadow:var(--shadow);border:1px solid rgba(0,0,0,.02)}.card .label{font-size:11px;color:var(--muted);font-weight:800}.card .num{font-size:25px;font-weight:950;margin-top:7px}
+.panel{background:#fff;border-radius:18px;padding:17px;box-shadow:var(--shadow);margin-top:16px}.panel h3{margin:0 0 13px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.toolbar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}.toolbar input,.toolbar select{padding:9px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.filterbar{background:linear-gradient(90deg,#fff4f8,#f0faf5);padding:12px;border-radius:14px;margin-bottom:14px}.filterbar strong{font-size:12px;margin-right:7px}.filterbar select,.filterbar input{padding:8px;border:1px solid var(--line);border-radius:9px;margin:3px}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{font-size:11px;color:#756d75;background:#fffafb}.scroll{overflow:auto}.badge{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:900}.ok{background:var(--green2)}.warn{background:var(--yellow)}.bad{background:#fde3e8}.info{background:#eee9fa}.muted{color:var(--muted)}.actions{display:flex;gap:4px;flex-wrap:wrap}.actions .btn{padding:6px 8px;font-size:10px}.empty{text-align:center;color:var(--muted);padding:24px}.section-title{font-size:12px;font-weight:950;margin:16px 0 8px}.assistant-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.report-card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px}.report-card h4{margin:0 0 9px}.report-row{padding:8px 0;border-bottom:1px dashed var(--line);font-size:12px;line-height:1.5}.report-row:last-child{border:0}.camera{width:100%;max-height:360px;background:#222;border-radius:15px;object-fit:cover}.distance{font-weight:900}
+.modal{position:fixed;inset:0;background:rgba(35,25,35,.38);display:flex;align-items:center;justify-content:center;padding:18px;z-index:50}.modal-card{width:min(720px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:22px;padding:21px}.modal-head{display:flex;justify-content:space-between;align-items:center}.modal-head h3{margin:0}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}.note{padding:10px;background:#faf5f8;border-radius:10px;font-size:11px;color:var(--muted);line-height:1.5}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(3,1fr)}.assistant-grid{grid-template-columns:1fr 1fr}}@media(max-width:800px){.sidebar{position:static;width:100%;height:auto}.app{display:block}.main{margin:0;width:100%;padding:13px}.cards,.grid2,.assistant-grid,.formgrid{grid-template-columns:1fr}.nav{display:grid;grid-template-columns:1fr 1fr}.top{align-items:flex-start}}
+
+.dashboard-hero{background:linear-gradient(120deg,#fff0f6,#eefaf4 55%,#f7f1ff);border:1px solid #f0e4ea;border-radius:22px;padding:20px;margin-bottom:15px;box-shadow:var(--shadow)}
+.dashboard-hero .eyebrow{font-size:10px;font-weight:950;letter-spacing:1.4px;color:#8d7785;text-transform:uppercase}.dashboard-hero h2{margin:5px 0;font-size:26px}.dashboard-hero p{margin:0;color:var(--muted);font-size:12px}
+.cards .card{transition:.18s;position:relative;overflow:hidden}.cards .card:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(70,45,65,.12)}.cards .card:after{content:"";position:absolute;width:70px;height:70px;border-radius:50%;right:-25px;top:-25px;background:rgba(246,202,219,.25)}
+.panel{border:1px solid #f1e6eb}.panel h3{font-size:15px}
+.nav button{transition:.15s}.nav button.active{font-weight:950;box-shadow:inset 3px 0 #dba6bd}
+.btn{transition:.15s}.btn:hover{transform:translateY(-1px);filter:brightness(.98)}
+.filterbar{border:1px solid #eadfe5;box-shadow:0 5px 18px rgba(70,45,65,.04)}.filterbar strong{color:#6c5b67}
+th{position:sticky;top:0;z-index:2}tr:hover td{background:#fffafb}
+.badge{letter-spacing:.2px}
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.quick{padding:14px;border-radius:15px;background:linear-gradient(135deg,#fff8fb,#f8fffc);border:1px solid var(--line)}
+@media(max-width:800px){.quick-grid{grid-template-columns:1fr}}
+.top-right{display:flex;align-items:center;gap:16px}.realtime-clock{min-width:155px;text-align:right;padding:7px 12px;border-radius:14px;background:linear-gradient(135deg,#fff7fb,#f4fbf7);border:1px solid rgba(235,220,228,.8);box-shadow:0 4px 14px rgba(80,50,70,.05)}.realtime-clock div{font-size:18px;font-weight:800;letter-spacing:.5px}.realtime-clock small{font-size:11px;color:#7b6b75}
+<style>
+.product-pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:8px}
+.product-pick label{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid #eee;border-radius:12px;background:#fff}
+.searchbox{min-width:240px;flex:1}
+
+.product-pick-visual{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}.product-choice{display:flex!important;align-items:center;gap:9px!important;padding:7px!important;border:1px solid #eee;border-radius:16px;background:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.04)}.product-choice input{margin-left:4px}.pv{display:flex;align-items:center;gap:9px;flex:1;padding:6px;border-radius:13px}.pv-cup{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:27px;background:#fff;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}.pv-info{display:flex;flex-direction:column;gap:2px}.pv-info b{font-size:12px;line-height:1.15}.pv-info small{font-size:11px;opacity:.7}.pv.pink{background:#fff0f6}.pv.rose{background:#fff1f3}.pv.cream{background:#fff8e8}.pv.green{background:#eefaf2}.pv.mint{background:#effbf7}.stock-entry{padding:12px;border:1px solid #eee;border-radius:18px;background:#fff;margin-top:10px;box-shadow:0 5px 18px rgba(0,0,0,.04)}.stock-entry-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-weight:700}.stock-entry-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btn.mini{padding:5px 9px;font-size:11px}@media(max-width:700px){.stock-entry-grid{grid-template-columns:1fr}.product-pick-visual{grid-template-columns:1fr}}
+</style>
+
+<style>
+body{background:radial-gradient(circle at 15% 0%,#fff0f7 0,transparent 28%),radial-gradient(circle at 90% 5%,#e9f8f0 0,transparent 25%),var(--bg)}
+.sidebar{background:rgba(255,255,255,.92);backdrop-filter:blur(14px)}
+.brand:before{content:"●";display:inline-block;margin-right:7px;color:#ef9fbe}
+.nav button{transition:.18s transform,.18s background,.18s box-shadow}
+.nav button.active{box-shadow:0 7px 18px rgba(210,130,160,.12)}
+.card{transition:.18s transform,.18s box-shadow}
+.card:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(70,45,65,.12)}
+.panel{border:1px solid rgba(235,220,228,.65)}
+.filterbar{box-shadow:inset 0 1px 0 #fff,0 4px 14px rgba(80,50,70,.04)}
+.filterbar select,.filterbar input{min-width:120px}
+.report-card{box-shadow:0 5px 16px rgba(70,45,65,.045)}
+table tr:hover td{background:#fff9fb}
+h1:after{content:"";display:block;width:38px;height:4px;border-radius:10px;background:linear-gradient(90deg,#efb2ca,#b8ddca);margin-top:7px}
+</style>
+<style>
+/* =========================
+   YOGULATO V7 UI OVERHAUL
+   Data / Firebase / business logic intentionally untouched.
+   ========================= */
+:root{
+  --bg:#fff9fc;--card:#ffffff;--pink:#e76b9b;--pink2:#fff0f6;--pink3:#f8c4d9;
+  --green:#319a78;--green2:#e9f8f2;--mint:#cfeee1;--cream:#fff7e9;--lav:#eee9ff;
+  --ink:#263142;--muted:#8190a4;--line:#eadfe7;--shadow:0 12px 32px rgba(74,43,63,.08)
+}
+body{background:radial-gradient(circle at 0 0,#ffe8f2 0,transparent 27%),radial-gradient(circle at 100% 8%,#e8f8f1 0,transparent 25%),#fffafd;color:var(--ink)}
+.sidebar{background:rgba(255,255,255,.94);border-right:1px solid #f0dfe8;backdrop-filter:blur(16px);box-shadow:8px 0 28px rgba(80,45,70,.04)}
+.brand{color:#334052;font-size:18px}.brand:before{content:'🍧';color:initial;margin-right:8px}.brand small{color:#a17d91}
+.nav button{color:#59687a;border-radius:14px;padding:12px 13px}.nav button.active,.nav button:hover{background:linear-gradient(90deg,#fff0f6,#f1fbf6);color:#d24e82;box-shadow:none}
+.main{padding:24px 26px}.top{padding:2px 0 18px;border-bottom:1px solid #f1e7ec}.top h1{color:#273446;font-size:27px}.top h1:after{background:linear-gradient(90deg,#e76b9b,#55b18d)}
+.user{border:1px solid #f0dfe8;background:linear-gradient(135deg,#fff5f9,#f3fbf7);box-shadow:none;border-radius:16px}.realtime-clock{box-shadow:none}
+.dashboard-hero{background:linear-gradient(120deg,#fff0f6 0%,#fff 48%,#eefaf4 100%);border:1px solid #f0dce7;box-shadow:var(--shadow)}
+.dashboard-hero .eyebrow{color:#ca5b88}.dashboard-hero h2{color:#263142}
+.filterbar{background:linear-gradient(100deg,#fff5f9,#f3fbf7);border:1px solid #ecdfe7;box-shadow:none}
+.filterbar select,.filterbar input,.toolbar input,.toolbar select,.field input,.field select,.field textarea{border:1px solid #dfe6ed;background:#fff;border-radius:13px}
+.cards{grid-template-columns:repeat(3,1fr);gap:16px}.card{border:1px solid #eadfe7;border-top:4px solid #e76b9b;border-radius:20px;box-shadow:var(--shadow);padding:19px}.card:nth-child(2){border-top-color:#e6ad48}.card:nth-child(3){border-top-color:#d95f87}.card:nth-child(4){border-top-color:#5aa98c}.card:nth-child(5){border-top-color:#9b83db}.card:nth-child(6){border-top-color:#65a9d7}.card .label{font-size:12px}.card .num{font-size:32px;color:#2e9a79}
+.panel{border:1px solid #eadfe7;border-radius:20px;box-shadow:var(--shadow);padding:19px}.panel h3{color:#344256;font-size:16px}
+.btn{border-radius:14px;padding:11px 15px;box-shadow:none}.primary{background:#e76b9b;color:#fff}.green{background:#319a78;color:#fff}.lav{background:#8061d9;color:#fff}.yellow{background:#e9b84c}.danger{background:#f2c1cb}.ghost{background:#f5f2f5}
+.quick{border-radius:18px;border-color:#efdfe7;background:linear-gradient(135deg,#fff7fa,#f6fffb)}
+.badge{border-radius:999px}.ok{background:#e6f7ef;color:#23795d}.warn{background:#fff3d1;color:#946b17}.bad{background:#fde7ec;color:#ad4662}.info{background:#eee9ff;color:#6b53b6}
+table{font-size:12px}th{background:#fff6fa;color:#657286}td{border-bottom:1px solid #f0e6eb}.scroll,.tablewrap{border-radius:14px}
+.modal-card{border:1px solid #eedfe7;box-shadow:0 22px 60px rgba(65,38,55,.18)}
+.login{background:linear-gradient(135deg,#fff0f6,#eefaf4)}.login-card{border:1px solid #efdfe7;box-shadow:0 18px 50px rgba(76,43,65,.11)}
+.mobile-head,.mobile-nav,.wa-float{display:none}
+
+@media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}.assistant-grid{grid-template-columns:1fr 1fr}}
+
+@media(max-width:800px){
+  body{padding-bottom:82px;overflow-x:hidden}
+  .sidebar{display:none}.app{display:block;min-height:100vh}.main{margin:0;width:100%;padding:0 13px 24px}
+  .mobile-head{display:flex;position:sticky;top:0;z-index:20;margin:0 -13px 10px;padding:14px 16px 12px;align-items:center;justify-content:space-between;gap:10px;background:linear-gradient(135deg,#fff0f6,#fff 52%,#eefaf4);border-bottom:1px solid #f0dfe8;box-shadow:0 5px 20px rgba(75,45,65,.07)}
+  .mobile-brand{min-width:0}.yogo-logo{font-size:27px;font-weight:950;line-height:1;background:linear-gradient(90deg,#d54f83,#359b79);-webkit-background-clip:text;background-clip:text;color:transparent;font-family:Arial,sans-serif;font-style:italic}.mobile-brand small{font-size:9px;color:#9b8792;letter-spacing:.5px}
+  .mobile-user{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #efdfe7;padding:7px 10px;border-radius:18px;min-width:110px}.mobile-user>span{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:#e76b9b;color:#fff;font-weight:900;font-size:11px}.mobile-user b{display:block;font-size:11px}.mobile-user small{display:block;font-size:9px;color:#8a97a7;margin-top:1px}
+  .top{display:none}.pageTitle{display:none}
+  .dashboard-hero{margin-top:12px;padding:17px;border-radius:20px}.dashboard-hero h2{font-size:21px}.dashboard-hero p{font-size:12px;line-height:1.55}
+  .filterbar{padding:11px;border-radius:16px}.filterbar select,.filterbar input{width:100%;margin:4px 0;min-width:0}.filterbar strong{display:block;margin:0 0 4px}
+  .cards{grid-template-columns:1fr 1fr;gap:11px}.card{padding:15px;border-radius:18px}.card .num{font-size:29px}.card .label{font-size:11px}
+  .grid2,.assistant-grid,.formgrid{grid-template-columns:1fr}.panel{padding:15px;border-radius:19px;margin-top:13px}.panel h3{font-size:15px}.toolbar{display:grid;grid-template-columns:1fr;gap:8px}.toolbar .btn{width:100%}
+  .btn{min-height:44px}.actions{display:grid;grid-template-columns:1fr 1fr}.actions .btn{min-height:38px}
+  .scroll,.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.scroll table,.tablewrap table{min-width:850px}
+  .modal{padding:10px}.modal-card{width:96vw;max-height:88vh;border-radius:20px;padding:16px}.modal-head{gap:10px}.modal-head h3{font-size:17px}
+  .camera{max-height:45vh}
+  .mobile-nav{display:grid;position:fixed;left:8px;right:8px;bottom:8px;z-index:40;grid-template-columns:repeat(5,1fr);gap:3px;padding:7px 5px;background:rgba(255,255,255,.94);border:1px solid #eddfe7;border-radius:22px;box-shadow:0 12px 35px rgba(58,38,51,.18);backdrop-filter:blur(16px)}
+  .mobile-nav button{background:transparent;color:#768395;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px 2px;border-radius:15px;min-width:0}.mobile-nav button span{font-size:19px;line-height:1}.mobile-nav button small{font-size:9px;font-weight:800;white-space:nowrap}.mobile-nav button.active{background:#fff0f6;color:#d34f83}
+  .wa-float{display:flex;position:fixed;right:18px;bottom:98px;z-index:45;align-items:center;gap:7px;background:#22b573;color:#fff;border:4px solid #fff;border-radius:999px;padding:8px 13px 8px 9px;box-shadow:0 10px 26px rgba(34,181,115,.28)}.wa-float span{width:35px;height:35px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#22b573;font-size:23px;font-weight:900}.wa-float b{font-size:11px}
+}
+@media(max-width:430px){.cards{gap:9px}.card{padding:13px}.card .num{font-size:27px}.mobile-user{min-width:100px}.mobile-user b{font-size:10px}.mobile-nav button small{font-size:8px}}
+
+.wa-auto-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-top:16px}
+.wa-settings-card,.wa-preview-card{background:linear-gradient(145deg,#fff,#fff7fb);border:1px solid #eadff0;border-radius:22px;padding:18px;box-shadow:0 10px 30px rgba(70,90,120,.08)}
+.wa-settings-card h4,.wa-preview-card h4{margin:0 0 14px;color:#1762a6;font-size:15px}
+.wa-field{margin-bottom:13px}.wa-field label{display:block;font-size:11px;font-weight:900;color:#7890a8;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}.wa-field input,.wa-field select{width:100%;padding:11px 12px;border:1px solid #d9e4ef;border-radius:13px;background:#fff;font:inherit;color:#203247;box-sizing:border-box}
+.wa-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.wa-switch{display:flex;align-items:center;justify-content:space-between;background:#f4fbf8;border:1px solid #d8efe4;padding:11px 13px;border-radius:14px;margin-bottom:13px}.wa-switch b{font-size:13px}.wa-switch input{width:20px;height:20px;accent-color:#22b573}
+.wa-preview{border-radius:20px;overflow:hidden;background:#e9f6f0;border:1px solid #d5e9e2}.wa-preview-head{background:#17877b;color:#fff;padding:13px 15px;display:flex;gap:10px;align-items:center}.wa-avatar{width:38px;height:38px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:21px}.wa-preview-head b{display:block}.wa-preview-head small{opacity:.85}.wa-bubble{margin:13px;background:#fff;border-radius:16px;padding:13px;box-shadow:0 5px 16px rgba(0,0,0,.06);font-size:12px;line-height:1.55;color:#27394b}.wa-bubble .wa-banner{height:64px;border-radius:12px;background:linear-gradient(135deg,#ffd6e7,#d8f5e8);display:grid;place-items:center;color:#d34f83;font-weight:900;font-size:18px;margin-bottom:10px}.wa-report-preview{font-family:Arial,sans-serif}.wa-report-preview .sep{border-top:1px dashed #b7c9d7;margin:9px 0}.wa-report-preview .trade{font-weight:900;color:#175d9e}.wa-report-preview .outlet{font-weight:800}.wa-statusline{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:10px;padding:9px 11px;border-radius:12px;background:#f4f8fb;color:#61758a}.wa-status-dot{width:9px;height:9px;border-radius:50%;background:#22b573;display:inline-block}.wa-note{font-size:11px;color:#8194a8;line-height:1.5;margin-top:10px}.wa-chip{display:inline-block;padding:5px 9px;border-radius:999px;background:#fff0f6;color:#d34f83;font-weight:800;font-size:10px;margin:2px}
+@media(max-width:760px){.wa-auto-grid{grid-template-columns:1fr}.wa-two{grid-template-columns:1fr}.wa-settings-card,.wa-preview-card{padding:14px}}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login">
+<div class="login-card">
+<div class="logo">Sour Sally Yogulato<small>Operational System</small></div>
+<div class="field"><label>Username</label><input id="loginUser" autocomplete="username" placeholder="Masukkan username"></div>
+<div class="field"><label>Password</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Masukkan password"></div>
+<button class="btn primary" style="width:100%" onclick="login()">Masuk</button>
+<p id="loginError" style="color:#c24b62;font-size:12px"></p>
+<div class="note">Masukkan username dan password secara manual.<br>Login tersimpan di sistem akun.</div>
+</div></div>
+
+<div id="app" class="app hidden">
+<aside class="sidebar">
+<div class="brand">SOUR SALLY YOGULATO<small>Operational System</small></div>
+<div class="nav">
+<button data-page="dashboard" onclick="showPage('dashboard')">🏠 Dashboard</button>
+<button data-page="attendance" onclick="showPage('attendance')">📍 Absensi & Jangkauan</button>
+<button data-page="approval" onclick="showPage('approval')">✅ Approval Manager</button>
+<button data-page="employees" onclick="showPage('employees')">👥 Karyawan</button>
+<button data-page="outlets" onclick="showPage('outlets')">🏪 Wilayah & Outlet</button>
+<button data-page="stock" onclick="showPage('stock')">📦 Stock IN / OUT</button>
+<button data-page="inventory" onclick="showPage('inventory')">📊 Inventory</button>
+<button data-page="assistant" onclick="showPage('assistant')">🤖 Assistant</button>
+ <button data-page="users" onclick="showPage('users')">🔐 Akun Login</button>
+</div>
+<button class="btn ghost" style="width:100%;margin-top:16px" onclick="logout()">Keluar</button>
+</aside>
+
+<main class="main">
+<div class="mobile-head">
+  <div class="mobile-brand"><div class="yogo-logo">Yogulato</div><small>Operational System</small></div>
+  <div class="mobile-user"><span id="mobileUserInitial">RI</span><div><b id="mobileUserName">Admin</b><small id="mobileUserRole">Admin</small></div></div>
+</div>
+<div class="top"><h1 id="pageTitle">Dashboard</h1><div class="top-right"><div class="realtime-clock"><div id="liveTime">00:00:00</div><small id="liveDate">-</small></div><div id="cloudStatus" class="badge">☁️ Menghubungkan...</div><div class="user">👤 <b id="currentUser"></b> • <span id="currentRole"></span></div></div></div>
+
+<section id="dashboard" class="page active">
+<div class="dashboard-hero"><div class="eyebrow">Sour Sally Yogulato • Operations Control</div><h2>Good day, team 👋</h2><p>Pantau stock, absensi, outlet, dan kebutuhan refill dari satu dashboard. Semua laporan mengikuti filter yang aktif.</p></div>
+<div id="globalFilters" class="filterbar"></div>
+<div class="cards">
+<div class="card"><div class="label">Stock IN</div><div class="num" id="dIn">0</div></div>
+<div class="card"><div class="label">Stock OUT</div><div class="num" id="dOut">0</div></div>
+<div class="card"><div class="label">Karyawan Aktif</div><div class="num" id="dEmp">0</div></div>
+<div class="card"><div class="label">Hadir</div><div class="num" id="dPresent">0</div></div>
+<div class="card"><div class="label">Jumlah Outlet</div><div class="num" id="dOutlet">0</div></div>
+<div class="card"><div class="label">Perlu Refill</div><div class="num" id="dRefill">0</div></div>
+</div>
+<div class="grid2">
+<div class="panel"><h3>⚡ Absen Cepat</h3><p class="muted" style="font-size:12px">Pilih karyawan lalu sistem memeriksa lokasi outlet dan radius jangkauan.</p><button class="btn primary" onclick="openCamera()">📸 Selfie + Lokasi</button> <button class="btn green" onclick="openManualAttendance()">✍️ Manual</button></div>
+<div class="panel"><h3>📌 Ringkasan Area</h3><div id="areaSummary"></div></div>
+</div>
+<div class="panel"><h3>⚠️ Prioritas Hari Ini</h3><div id="priority"></div></div>
+</section>
+
+<section id="attendance" class="page">
+<div class="panel"><h3>📍 Absensi Berdasarkan Wilayah / Supermarket / Outlet</h3><div id="attFilters" class="filterbar"></div>
+<div class="toolbar"><button class="btn primary" onclick="openCamera()">📸 Absen Selfie + Verifikasi Lokasi</button><button class="btn green" onclick="openManualAttendance()">✍️ Absen Manual</button><button class="btn lav" onclick="exportAttendance()">⬇️ Tarik Absensi ke Excel</button></div>
+<div class="scroll"><table><thead><tr><th>Tanggal/Jam</th><th>Karyawan</th><th>Wilayah</th><th>Modern Trade</th><th>Outlet</th><th>Metode</th><th>Lokasi</th><th>Jarak</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="attTable"></tbody></table></div></div>
+</section>
+
+<section id="approval" class="page">
+<div class="panel"><h3>✅ Persetujuan Absensi Manual</h3><div class="note">Manual attendance berstatus pending dan <b>tidak dihitung hadir</b> sebelum disetujui Manager/Admin.</div><div class="scroll"><table><thead><tr><th>Tanggal/Jam</th><th>Karyawan</th><th>Wilayah</th><th>Modern Trade</th><th>Outlet</th><th>Alasan</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="approvalTable"></tbody></table></div></div>
+</section>
+
+<section id="employees" class="page">
+<div class="panel"><h3>👥 Karyawan</h3><div class="toolbar"><button class="btn primary" onclick="openEmployee()">＋ Tambah Karyawan + Akun</button><input id="empSearch" class="searchbox" placeholder="🔎 Cari nama karyawan..." oninput="renderEmployees()"><select id="empStatus" onchange="renderEmployees()"><option value="">Semua Status</option><option>Aktif</option><option>Nonaktif</option></select></div><div class="note">Karyawan tidak lagi terikat Wilayah, Modern Trade, atau Outlet. Saat absen, mereka memilih lokasi tempat sedang bertugas. Akun login juga bisa dibuat langsung dari form Karyawan.</div><div class="scroll"><table><thead><tr><th>Nama</th><th>Jabatan</th><th>Akun Login</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="empTable"></tbody></table></div></div>
+</section>
+
+<section id="outlets" class="page">
+<div class="panel"><h3>🏪 Wilayah → Modern Trade → Outlet</h3><div class="toolbar"><button class="btn primary" onclick="openOutlet()">＋ Outlet</button><button class="btn green" onclick="openRegion()">＋ Wilayah</button><button class="btn lav" onclick="openTrade()">＋ Modern Trade</button></div><div class="scroll"><table><thead><tr><th>Wilayah</th><th>Modern Trade</th><th>Outlet</th><th>Koordinat</th><th>Radius</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="outTable"></tbody></table></div></div>
+</section>
+
+<section id="stock" class="page">
+<div class="panel"><h3>📦 Rekap & Transaksi Stock IN / OUT</h3><div id="stockFilters" class="filterbar"></div><div class="toolbar"><button class="btn primary" onclick="openStock()">＋ Input Stock</button><button class="btn lav" onclick="exportStock()">⬇️ Tarik Stock IN/OUT ke Excel</button></div><div class="scroll"><table><thead><tr><th>Tanggal</th><th>Jenis</th><th>Wilayah</th><th>Modern Trade</th><th>Outlet</th><th>Produk</th><th>Qty</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="stockTable"></tbody></table></div></div>
+</section>
+
+<section id="inventory" class="page">
+<div class="panel"><h3>📊 Inventory per Supermarket / Outlet</h3><div id="invFilters" class="filterbar"></div><div class="toolbar"><button class="btn lav" onclick="exportInventory()">⬇️ Tarik Inventory ke Excel</button></div><div class="scroll"><table><thead><tr><th>Wilayah</th><th>Modern Trade</th><th>Outlet</th><th>Produk</th><th>Stock IN</th><th>Stock OUT</th><th>Stock</th><th>Minimum</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="invTable"></tbody></table></div></div>
+</section>
+
+<section id="assistant" class="page">
+<div class="panel"><h3>🤖 Assistant Operasional Detail</h3><div id="assistantFilters" class="filterbar"></div><div class="toolbar"><button class="btn primary" onclick="generateAssistant()">🔄 Generate Detail</button><button class="btn green" onclick="shareWhatsApp()">📲 Share WhatsApp</button><button class="btn lav" onclick="exportAssistant()">⬇️ Excel Report</button></div><div id="assistantResult"></div></div>
+<div class="panel">
+<h3>📲 Assistant WhatsApp — 1 Grup Pusat</h3>
+<p class="muted" style="font-size:12px">Semua supermarket dan outlet digabung menjadi <b>satu laporan</b>. Setiap outlet diberi jarak/divider agar mudah dibaca di grup WhatsApp.</p>
+<div class="wa-auto-grid">
+  <div class="wa-settings-card">
+    <h4>⚙️ Pengaturan Pengiriman Otomatis</h4>
+    <div class="wa-field"><label>Nama Grup WhatsApp</label><input id="waGroupName" placeholder="Grup Operasional Yogulato"></div>
+    <div class="wa-field"><label>Link Grup WhatsApp (opsional)</label><input id="waGroupLink" placeholder="https://chat.whatsapp.com/..."></div>
+    <div class="wa-two">
+      <div class="wa-field"><label>Jam Kirim</label><input id="waSendTime" type="time" value="15:30"></div>
+      <div class="wa-field"><label>Batas Telat</label><input id="waLateAfter" type="time" value="09:00"></div>
+    </div>
+    <div class="wa-switch"><b>🟢 Otomatis Kirim</b><input id="waAutoEnabled" type="checkbox"></div>
+    <div class="wa-field"><label>Webhook Bot WA (untuk kirim otomatis)</label><input id="waWebhook" placeholder="https://server-bot-anda/..." autocomplete="off"></div>
+    <div class="wa-field"><label>Format Laporan</label><select id="waFormat"><option value="all">Semua Supermarket + Outlet dalam 1 laporan</option><option value="trade">Dikelompokkan per supermarket</option><option value="region">Dikelompokkan per wilayah</option></select></div>
+    <div class="toolbar"><button class="btn primary" onclick="saveWhatsAppSettings()">💾 Simpan Pengaturan</button><button class="btn green" onclick="testWhatsAppReport()">✉️ Test Kirim</button></div>
+    <div id="waAutoStatus" class="wa-statusline"><span class="wa-status-dot"></span><span>Jadwal belum diaktifkan.</span></div>
+    <div class="wa-note">Catatan: pengiriman otomatis yang benar-benar masuk ke grup membutuhkan Bot WhatsApp/Webhook. Tanpa webhook, tombol Test Kirim membuka WhatsApp dengan pesan siap kirim; browser tidak boleh mengirim pesan ke grup secara diam-diam.</div>
+  </div>
+  <div class="wa-preview-card">
+    <h4>👀 Preview Pesan WhatsApp</h4>
+    <div class="wa-preview">
+      <div class="wa-preview-head"><div class="wa-avatar">🍦</div><div><b id="waPreviewGroup">Grup Operasional Yogulato</b><small>Semua Supermarket & Outlet</small></div></div>
+      <div class="wa-bubble"><div class="wa-banner">🌸 YOGULATO DAILY REPORT 🍦</div><div id="waPreviewReport" class="wa-report-preview"></div></div>
+    </div>
+  </div>
+</div>
+</div>
+</section>
+<section id="users" class="page">
+<div class="panel"><div class="toolbar" style="justify-content:space-between"><div><h3>🔐 Akun Login</h3><p class="muted">Kelola akun login dan hubungkan akun dengan karyawan. Karyawan yang belum punya akun akan muncul otomatis di sini.</p></div><button class="btn primary" onclick="openUser()">＋ Tambah Akun Login</button></div><div class="tablewrap"><table><thead><tr><th>Nama</th><th>Username</th><th>Role</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="userTable"></tbody></table></div></div>
+</section>
+</main></div>
+
+<nav class="mobile-nav" aria-label="Navigasi utama">
+  <button data-page="dashboard" onclick="showPage('dashboard')"><span>⌂</span><small>Dashboard</small></button>
+  <button data-page="attendance" onclick="showPage('attendance')"><span>📍</span><small>Absensi</small></button>
+  <button data-page="stock" onclick="showPage('stock')"><span>📦</span><small>Stock</small></button>
+  <button data-page="inventory" onclick="showPage('inventory')"><span>▦</span><small>Inventory</small></button>
+  <button data-page="assistant" onclick="showPage('assistant')"><span>🤖</span><small>Bot WA</small></button>
+</nav>
+
+<button class="wa-float" onclick="shareWhatsApp()" aria-label="Buka Bot WhatsApp"><span>☏</span><b>Bot WA</b></button>
+
+<div id="modal" class="modal hidden"><div class="modal-card"><div class="modal-head"><h3 id="modalTitle"></h3><button class="btn ghost" onclick="closeModal()">✕</button></div><div id="modalBody"></div></div></div>
+
+<script>
+const PRODUCTS=["Slay Sally 100ml","Slay Sally 330ml","Ichi-Go Mochi Strawberry 100ml","Ichi-Go Mochi Strawberry 330ml","Cookie Dough & Raisin 100ml","Cookie Dough & Raisin 330ml","Bean Missin' U Matcha 100ml","Bean Missin' U Matcha 330ml"];
+const TRADES=["GrandLucky","FamilyMart","FoodHall","AEON Mall","Lotte Mart","Ranch Market","Market City"];
+
+let cloudDB=null, cloudUnsubs=[], cloudReady=false, cloudApplying=false, cloudDirty=false, cloudSyncTimer=null, cloudWriteInFlight=false, cloudBootstrapping=true;
+
+/* ================= FIREBASE MULTI-USER REALTIME =================
+   Project: soursallysystem
+   Data is split into Firestore collections so different users can work at the same time
+   without repeatedly replacing one giant erp/main document.
+*/
+const firebaseConfig = {
+  apiKey: "AIzaSyDmMVys25fhL9tsqi42ABpXDVErVglIIDc",
+  authDomain: "soursallysystem.firebaseapp.com",
+  projectId: "soursallysystem",
+  storageBucket: "soursallysystem.firebasestorage.app",
+  messagingSenderId: "1017313625680",
+  appId: "1:1017313625680:web:082bfd4f696a9efdac3355"
+};
+let db=JSON.parse(localStorage.getItem("ssy_erp_v4")||"null");
+if(!db){
+ db={regions:["Jabodetabek"],trades:[...TRADES],outlets:[
+ {id:"o1",region:"Jabodetabek",trade:"GrandLucky",name:"GrandLucky SCBD",lat:-6.2245,lng:106.8092,radius:300,status:"Aktif"},
+ {id:"o2",region:"Jabodetabek",trade:"GrandLucky",name:"GrandLucky Radio Dalam",lat:-6.2660,lng:106.7970,radius:300,status:"Aktif"},
+ {id:"o3",region:"Jabodetabek",trade:"FamilyMart",name:"FamilyMart Sudirman",lat:-6.2088,lng:106.8229,radius:300,status:"Aktif"},
+ {id:"o4",region:"Jabodetabek",trade:"FoodHall",name:"FoodHall Senayan",lat:-6.2267,lng:106.8002,radius:300,status:"Aktif"},
+ {id:"o5",region:"Jabodetabek",trade:"AEON Mall",name:"AEON Mall BSD",lat:-6.3024,lng:106.6520,radius:500,status:"Aktif"},
+ {id:"o6",region:"Jabodetabek",trade:"Lotte Mart",name:"Lotte Mart Kuningan",lat:-6.2251,lng:106.8315,radius:400,status:"Aktif"},
+ {id:"o7",region:"Jabodetabek",trade:"Ranch Market",name:"Ranch Market Pondok Indah",lat:-6.2657,lng:106.7834,radius:400,status:"Aktif"},
+ {id:"o8",region:"Jabodetabek",trade:"Market City",name:"Market City PIK",lat:-6.1110,lng:106.7420,radius:500,status:"Aktif"}],
+ employees:[
+ {id:"e1",name:"Andi",position:"Staff Outlet",outlet:"o1",status:"Aktif"},
+ {id:"e2",name:"Budi",position:"Staff Outlet",outlet:"o2",status:"Aktif"},
+ {id:"e3",name:"Citra",position:"Supervisor",outlet:"o3",status:"Aktif"},
+ {id:"e4",name:"Dina",position:"Staff Outlet",outlet:"o4",status:"Aktif"},
+ {id:"e5",name:"Eka",position:"Staff Outlet",outlet:"o5",status:"Aktif"}],
+ attendance:[],stock:[],minimum:{},users:[{id:"u1",username:"admin",password:"admin123",name:"Administrator",role:"Admin",status:"Aktif"},{id:"u2",username:"manager",password:"manager123",name:"Manager",role:"Manager",status:"Aktif"},{id:"u3",username:"staff",password:"staff123",name:"Staff",role:"Staff",status:"Aktif"}]
+ };
+ save();
+}
+if(!Array.isArray(db.users)||!db.users.length){
+ db.users=[
+  {id:"u1",username:"admin",password:"admin123",name:"Administrator",role:"Admin",status:"Aktif"},
+  {id:"u2",username:"manager",password:"manager123",name:"Manager",role:"Manager",status:"Aktif"},
+  {id:"u3",username:"staff",password:"staff123",name:"Staff",role:"Staff",status:"Aktif"}
+ ];
+ save();
+}
+db.outlets=(db.outlets||[]).map(o=>({products:PRODUCTS,...o}));
+
+if(!db.whatsapp) db.whatsapp={groupName:"Grup Operasional Yogulato",groupLink:"",sendTime:"15:30",lateAfter:"09:00",autoEnabled:false,webhook:"",format:"all",lastSentKey:""};
+cloudBootstrapping=false;
+function wireFilterCascades(){["global","att","stock","inv","assistant"].forEach(p=>{let r=document.getElementById(p+"Region"),t=document.getElementById(p+"Trade");if(!r||!t||r.dataset.wired)return;r.dataset.wired="1";r.addEventListener("change",()=>{mountFilters();renderAll()});t.addEventListener("change",()=>{mountFilters();renderAll()});let o=document.getElementById(p+"Outlet");if(o)o.addEventListener("change",()=>renderAll())})}
+
+function cloudConfigured(){return firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith("GANTI_") && firebaseConfig.projectId && !firebaseConfig.projectId.startsWith("GANTI_")}
+function setCloudStatus(text,kind=""){let e=document.getElementById("cloudStatus");if(!e)return;e.textContent=text;e.className="badge "+kind}
+function cloudKey(v){return encodeURIComponent(String(v)).replace(/%/g,"_")}
+function cloudCollections(){return [
+  ["regions",()=>db.regions.map((x,i)=>({id:"r_"+cloudKey(x),value:x,_key:x}))],
+  ["trades",()=>db.trades.map((x,i)=>({id:"t_"+cloudKey(x),value:x,_key:x}))],
+  ["outlets",()=>db.outlets.map(x=>({...x}))],
+  ["employees",()=>db.employees.map(x=>({...x}))],
+  ["users",()=>db.users.map(x=>({...x}))],
+  ["attendance",()=>db.attendance.map(x=>({...x}))],
+  ["stock",()=>db.stock.map(x=>({...x}))],
+  ["minimum",()=>Object.entries(db.minimum||{}).map(([k,v])=>({id:cloudKey(k),key:k,value:Number(v)}))],
+  ["settings",()=>[{id:"whatsapp",...((db.whatsapp)||{})}]]
+]}
+function localFromDoc(name,d){
+  const x={...d};delete x._key;delete x.value;
+  if(name==="regions") return d.value;
+  if(name==="trades") return d.value;
+  if(name==="minimum") return {key:d.key,value:d.value};
+  if(name==="settings") {delete x.id;return x;}
+  delete x.id; x.id=d.id; return x;
+}
+function mergeSnapshot(name,changes){
+  if(cloudApplying||cloudBootstrapping)return;
+  const arrName=name;
+  let arr=db[arrName];
+  if(name==="minimum") db.minimum=db.minimum||{};
+  if(name==="settings") db.whatsapp=db.whatsapp||{};
+  changes.forEach(ch=>{
+    const d=ch.doc.data();
+    if(name==="regions"||name==="trades"){
+      const val=d.value;
+      const target=db[name];
+      const old=target.findIndex(v=>v===val);
+      if(ch.type==="removed"){if(old>=0)target.splice(old,1)}
+      else if(old<0)target.push(val);
+    }else if(name==="minimum"){
+      if(ch.type==="removed") delete db.minimum[d.key]; else db.minimum[d.key]=Number(d.value||0);
+    }else if(name==="settings"){
+      if(ch.type!=="removed"){db.whatsapp=localFromDoc(name,d)}
+    }else{
+      const target=db[name]||[];
+      const idx=target.findIndex(v=>v.id===d.id);
+      if(ch.type==="removed"){if(idx>=0)target.splice(idx,1)}
+      else if(idx>=0) target[idx]=localFromDoc(name,d);
+      else target.push(localFromDoc(name,d));
+    }
+  });
+  localStorage.setItem("ssy_erp_v4",JSON.stringify(db));
+  renderAll();
+}
+function withTimeout(promise, ms=8000){
+  return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error("TIMEOUT")),ms))]);
+}
+async function readCloudState(){
+  let found=false;
+  for(const [name,getter] of cloudCollections()){
+    const snap=await withTimeout(cloudDB.collection("erpData").doc(name).collection("items").get(),5000);
+    if(snap.empty) continue;
+    found=true;
+    if(name==="regions") db.regions=snap.docs.map(d=>d.data().value).filter(Boolean);
+    else if(name==="trades") db.trades=snap.docs.map(d=>d.data().value).filter(Boolean);
+    else if(name==="minimum") {db.minimum={};snap.docs.forEach(d=>{const x=d.data();db.minimum[x.key]=Number(x.value||0)})}
+    else if(name==="settings") {const d=snap.docs.find(x=>x.id==="whatsapp");if(d)db.whatsapp=localFromDoc(name,d.data())}
+    else db[name]=snap.docs.map(d=>localFromDoc(name,d.data()));
+  }
+  return found;
+}
+async function writeCloudCollection(name,getter){
+  const col=cloudDB.collection("erpData").doc(name).collection("items");
+  const docs=getter().map(x=>({id:String(x.id), data:x}));
+  const snap=await col.get();
+  const wanted=new Set(docs.map(x=>x.id));
+  let batch=cloudDB.batch(), ops=0;
+  for(const old of snap.docs){
+    if(!wanted.has(old.id)){ batch.delete(old.ref); ops++; }
+    if(ops>=450){ await batch.commit(); batch=cloudDB.batch(); ops=0; }
+  }
+  for(const item of docs){
+    batch.set(col.doc(item.id),item.data,{merge:true}); ops++;
+    if(ops>=450){ await batch.commit(); batch=cloudDB.batch(); ops=0; }
+  }
+  if(ops) await batch.commit();
+}
+async function syncCloudNow(){
+  if(!cloudDB||!cloudReady||cloudApplying||!cloudDirty||cloudWriteInFlight)return false;
+  cloudWriteInFlight=true;
+  try{
+    if(!navigator.onLine) throw new Error("OFFLINE");
+    setCloudStatus("☁️ Menyimpan...","info");
+    for(const [name,getter] of cloudCollections()) await withTimeout(writeCloudCollection(name,getter),8000);
+    cloudDirty=false;
+    localStorage.setItem("ssy_erp_v4",JSON.stringify(db));
+    setCloudStatus("🟢 Realtime Online","ok");
+    return true;
+  }catch(err){
+    setCloudStatus(err.message==="OFFLINE"?"🟠 Offline — menunggu koneksi":"🟠 Cloud belum tersambung — data lokal aman","warn");
+    console.error("Firestore sync:",err);
+    setTimeout(()=>{if(cloudDirty&&!cloudWriteInFlight&&navigator.onLine)syncCloudNow()},5000);
+    return false;
+  }finally{cloudWriteInFlight=false}
+}
+function queueCloudSync(){
+  if(cloudSyncTimer)clearTimeout(cloudSyncTimer);
+  cloudSyncTimer=setTimeout(()=>{cloudSyncTimer=null;if(cloudDirty&&cloudReady)syncCloudNow()},150);
+}
+function attachRealtimeListeners(){
+  cloudUnsubs.forEach(u=>{try{u()}catch(e){}}); cloudUnsubs=[];
+  for(const [name] of cloudCollections()){
+    const unsub=cloudDB.collection("erpData").doc(name).collection("items").onSnapshot(snap=>{
+      cloudReady=true;
+      if(snap.metadata.hasPendingWrites){
+        if(!cloudWriteInFlight) setCloudStatus("☁️ Sinkronisasi...","info");
+        return;
+      }
+      if(cloudDirty||cloudApplying||cloudBootstrapping)return;
+      mergeSnapshot(name,snap.docChanges());
+      setCloudStatus("🟢 Realtime Online","ok");
+    },err=>{console.error("Realtime "+name,err);setCloudStatus("🟠 Realtime menunggu koneksi","warn")});
+    cloudUnsubs.push(unsub);
+  }
+}
+async function initRealtime(){
+  if(!cloudConfigured()){cloudBootstrapping=false;setCloudStatus("🟠 Mode Lokal","warn");return;}
+  try{
+    if(typeof firebase === "undefined") throw new Error("FIREBASE_SDK_TIDAK_TERMUAT — cek koneksi/CDN Firebase");
+    if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+    cloudDB=firebase.firestore();
+    if(!cloudDB) throw new Error("FIRESTORE_UNAVAILABLE");
+    setCloudStatus("☁️ Menghubungkan...","info");
+    let hasCloud=false;
+    try{hasCloud=await withTimeout(readCloudState(),8000)}catch(e){console.warn("Cloud read dilewati:",e)}
+    cloudReady=true; cloudBootstrapping=false;
+    if(!hasCloud){cloudDirty=true;queueCloudSync()}
+    else{cloudDirty=false;localStorage.setItem("ssy_erp_v4",JSON.stringify(db));renderAll()}
+    attachRealtimeListeners();
+    setCloudStatus("🟢 Realtime Online","ok");
+  }catch(err){
+    cloudReady=false; cloudBootstrapping=false;
+    const msg=String(err?.message||err||"UNKNOWN");
+    setCloudStatus("🟠 Cloud gagal: "+msg.slice(0,90),"warn");
+    console.error("Firebase init:",err);
+  }
+}
+
+let session=null,cameraStream=null;
+const uid=p=>p+Date.now()+Math.random().toString(16).slice(2), today=()=>new Date().toISOString().slice(0,10), nowTime=()=>new Date().toTimeString().slice(0,5);
+function save(){
+  localStorage.setItem("ssy_erp_v4",JSON.stringify(db));
+  if(cloudBootstrapping || cloudApplying) return;
+  cloudDirty=true;
+  if(cloudDB && cloudReady) queueCloudSync();
+}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function out(id){return db.outlets.find(x=>x.id===id)}
+function emp(id){return db.employees.find(x=>x.id===id)}
+function oi(id){let o=out(id)||{};return {region:o.region||"-",trade:o.trade||"-",name:o.name||"-"}}
+function activeEmployees(){return db.employees.filter(e=>e.status==="Aktif")}
+function approved(){return db.attendance.filter(a=>a.status==="Hadir")}
+function pending(){return db.attendance.filter(a=>a.status==="Pending")}
+function minStock(oid,p){return Number(db.minimum[oid+"|"+p]??10)}
+function balance(oid,p,filters={}){
+ return db.stock.filter(s=>s.outlet===oid&&s.product===p&&s.status!=="VOID"&&inDateFilter(s.date,filters))
+ .reduce((n,s)=>n+(s.type==="IN"?+s.qty:-+s.qty),0)
+}
+function movement(oid,p,type,filters={}){return db.stock.filter(s=>s.outlet===oid&&s.product===p&&s.status!=="VOID"&&s.type===type&&inDateFilter(s.date,filters)).reduce((n,s)=>n+ +s.qty,0)}
+function currentFilters(prefix=""){
+ return {startDate:document.getElementById(prefix+"StartDate")?.value||"",endDate:document.getElementById(prefix+"EndDate")?.value||"",date:document.getElementById(prefix+"Date")?.value||"",month:document.getElementById(prefix+"Month")?.value||"",year:document.getElementById(prefix+"Year")?.value||"",region:document.getElementById(prefix+"Region")?.value||"",trade:document.getElementById(prefix+"Trade")?.value||"",outlet:document.getElementById(prefix+"Outlet")?.value||""}
+}
+function inDateFilter(date,f){if(!date)return false;if(f.startDate&&date<f.startDate)return false;if(f.endDate&&date>f.endDate)return false;return(!f.date||date===f.date)&&(!f.month||date.slice(5,7)===f.month)&&(!f.year||date.slice(0,4)===f.year)}
+function outletProducts(o){return Array.isArray(o?.products)&&o.products.length?o.products:PRODUCTS}
+
+function setOptions(id,items,placeholder="Semua"){let e=document.getElementById(id);if(!e)return;let old=e.value;e.innerHTML=`<option value="">${placeholder}</option>`+[...new Set(items)].map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");if(items.includes(old))e.value=old}
+function filterHtml(prefix){
+ let ys=new Set([String(new Date().getFullYear())]);db.attendance.forEach(a=>ys.add(a.date.slice(0,4)));db.stock.forEach(s=>ys.add(s.date.slice(0,4)));
+ return `<strong>Filter:</strong><label>Mulai <input id="${prefix}StartDate" type="date"></label><label>Sampai <input id="${prefix}EndDate" type="date"></label><select id="${prefix}Date"><option value="">Tanggal tunggal (opsional)</option></select><select id="${prefix}Month"><option value="">Semua Bulan</option>${Array.from({length:12},(_,i)=>`<option value="${String(i+1).padStart(2,"0")}">${i+1}</option>`).join("")}</select><select id="${prefix}Year"><option value="">Semua Tahun</option>${[...ys].sort().reverse().map(y=>`<option>${y}</option>`).join("")}</select><select id="${prefix}Region"><option value="">Semua Wilayah</option></select><select id="${prefix}Trade"><option value="">Semua Supermarket</option></select><select id="${prefix}Outlet"><option value="">Semua Outlet</option></select><button class="btn ghost" onclick="clearFilter('${prefix}')">Reset</button>`;
+}
+function mountFilters(){
+ ["global","att","stock","inv","assistant"].forEach(p=>{
+   const host=document.getElementById(p==="global"?"globalFilters":p+"Filters");
+   if(host && !host.innerHTML) host.innerHTML=filterHtml(p);
+ });
+ ["global","att","stock","inv","assistant"].forEach(p=>{
+   const rEl=document.getElementById(p+"Region"), tEl=document.getElementById(p+"Trade"), oEl=document.getElementById(p+"Outlet");
+   if(!rEl||!tEl||!oEl)return;
+   const oldR=rEl.value,oldT=tEl.value,oldO=oEl.value;
+   rEl.innerHTML='<option value="">Semua Wilayah</option>'+[...new Set(db.outlets.map(o=>o.region))].map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");
+   if(db.regions.includes(oldR)) rEl.value=oldR;
+   const region=rEl.value;
+   tEl.innerHTML='<option value="">Semua Supermarket</option>'+[...new Set(db.outlets.filter(o=>!region||o.region===region).map(o=>o.trade))].map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");
+   if([...tEl.options].some(x=>x.value===oldT)) tEl.value=oldT;
+   const trade=tEl.value;
+   const available=db.outlets.filter(o=>(!region||o.region===region)&&(!trade||o.trade===trade));
+   oEl.innerHTML='<option value="">Semua Outlet</option>'+available.map(o=>`<option value="${o.id}">${esc(o.name)}</option>`).join("");
+   if(available.some(o=>o.id===oldO)) oEl.value=oldO;
+ });
+}
+function getF(p){return currentFilters(p)}
+function clearFilter(p){["StartDate","EndDate","Date","Month","Year","Region","Trade","Outlet"].forEach(x=>{let e=document.getElementById(p+x);if(e)e.value=""});renderAll()}
+function login(){
+ const userEl=document.getElementById("loginUser"), passEl=document.getElementById("loginPass"), errEl=document.getElementById("loginError");
+ const u=(userEl?.value||"").trim(), p=passEl?.value||"";
+ if(!u||!p){if(errEl)errEl.textContent="Username dan password wajib diisi.";return}
+ const account=(db.users||[]).find(x=>x&&x.username===u&&x.password===p&&x.status==="Aktif");
+ if(!account){if(errEl)errEl.textContent="Username/password salah atau akun nonaktif.";return}
+ session={user:account.username,name:account.name,role:account.role};
+ if(errEl)errEl.textContent="";
+ document.getElementById("loginScreen").classList.add("hidden");
+ document.getElementById("app").classList.remove("hidden");
+ document.getElementById("currentUser").textContent=(account.name||account.username)+" ("+account.username+")";
+ document.getElementById("currentRole").textContent=account.role||"";
+ const mu=document.getElementById("mobileUserName"),mr=document.getElementById("mobileUserRole"),mi=document.getElementById("mobileUserInitial");
+ if(mu)mu.textContent=account.name||account.username;
+ if(mr)mr.textContent=account.role||"";
+ if(mi)mi.textContent=String(account.name||account.username||"U").split(/\s+/).map(x=>x[0]).join("").slice(0,2).toUpperCase();
+ showPage("dashboard");
+}
+function logout(){location.reload()}
+function showPage(p){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(p).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===p));document.getElementById("pageTitle").textContent={dashboard:"Dashboard",attendance:"Absensi & Jangkauan",approval:"Approval Manager",employees:"Karyawan",outlets:"Wilayah & Outlet",stock:"Stock IN / OUT",inventory:"Inventory",assistant:"Assistant",users:"Akun Login"}[p];renderAll()}
+function modal(t,b){document.getElementById("modalTitle").textContent=t;document.getElementById("modalBody").innerHTML=b;document.getElementById("modal").classList.remove("hidden")}
+function closeModal(){stopCamera();document.getElementById("modal").classList.add("hidden")}
+function canManage(){return ["Admin","Manager"].includes(session.role)}
+function canManageUsers(){return session&&session.role==="Admin"}
+function openUser(id=""){if(!canManageUsers())return alert("Hanya Admin yang dapat mengelola akun login.");let x=id?db.users.find(u=>u.id===id):{username:"",password:"",name:"",role:"Sales",status:"Aktif"};modal(id?"Edit Akun Login":"Tambah Akun Login",`<div class=formgrid><div class=field><label>Nama</label><input id=uName value="${esc(x.name)}"></div><div class=field><label>Username</label><input id=uUsername value="${esc(x.username)}"></div><div class=field><label>Password</label><input id=uPassword type=password value="${esc(x.password)}"></div><div class=field><label>Role</label><select id=uRole>${["Sales","Staff","Supervisor","HR","Manager","Admin"].map(r=>`<option ${r===x.role?"selected":""}>${r}</option>`).join("")}</select></div><div class=field><label>Status</label><select id=uStatus><option ${x.status==="Aktif"?"selected":""}>Aktif</option><option ${x.status==="Nonaktif"?"selected":""}>Nonaktif</option></select></div></div><button class="btn primary" onclick="saveUser('${id}')">Simpan</button> ${id&&x.username!=="admin"?`<button class="btn danger" onclick="removeUser('${id}')">Hapus</button>`:""}`)}
+function saveUser(id){if(!canManageUsers())return;let name=uName.value.trim(),username=uUsername.value.trim(),password=uPassword.value,role=uRole.value,status=uStatus.value;if(!name||!username||!password)return alert("Nama, username, dan password wajib diisi.");if((db.users||[]).some(u=>u.username===username&&u.id!==id))return alert("Username sudah dipakai.");let x={id:id||uid("usr"),name,username,password,role,status};if(id)Object.assign(db.users.find(u=>u.id===id),x);else db.users.push(x);save();closeModal();renderAll();alert("Akun berhasil disimpan.")}
+function removeUser(id){if(!canManageUsers())return;let x=db.users.find(u=>u.id===id);if(!x||x.username==="admin")return alert("Akun admin utama tidak dapat dihapus.");if(confirm("Hapus akun "+x.username+"?")){db.users=db.users.filter(u=>u.id!==id);save();renderAll()}}
+function renderUsers(){let el=document.getElementById("userTable");if(!el)return;let users=db.users||[],emps=db.employees||[];let rows=[];users.forEach(u=>{rows.push(`<tr><td><b>${esc(u.name)}</b></td><td>${esc(u.username)}</td><td><span class="badge info">${esc(u.role)}</span></td><td><span class="badge ${u.status==="Aktif"?"ok":"bad"}">${u.status}</span></td><td>${canManageUsers()?`<button class="btn lav" onclick="openUser('${u.id}')">Edit</button> ${u.username!=="admin"?`<button class="btn danger" onclick="removeUser('${u.id}')">Hapus</button>`:""}`:"-"}</td></tr>`)});emps.filter(e=>!e.userId).forEach(e=>{rows.push(`<tr><td><b>${esc(e.name)}</b></td><td><span class="muted">Belum dibuat</span></td><td><span class="badge">${esc(e.position||"Staff")}</span></td><td><span class="badge bad">Belum ada akun</span></td><td>${canManageUsers()?`<button class="btn primary" onclick="openEmployee('${e.id}')">＋ Buat Akun</button>`:"-"}</td></tr>`)});if(!rows.length)rows=[`<tr><td colspan="5" class="empty">Belum ada akun login atau karyawan yang bisa dibuatkan akun.</td></tr>`];el.innerHTML=rows.join("")}
+
+function renderDashboard(){
+ let f=getF("global"),outs=db.outlets.filter(o=>o.status==="Aktif"&&(!f.region||o.region===f.region)&&(!f.trade||o.trade===f.trade)&&(!f.outlet||o.id===f.outlet)),emps=activeEmployees(),st=db.stock.filter(s=>s.status!=="VOID"&&inDateFilter(s.date,f)&&outs.some(o=>o.id===s.outlet)),present=new Set(approved().filter(a=>inDateFilter(a.date,f)&&emps.some(e=>e.id===a.employee)).map(a=>a.employee)),ref=[];outs.forEach(o=>outletProducts(o).forEach(p=>{let bal=balance(o.id,p,f);if(bal<=minStock(o.id,p))ref.push({o,p,bal,min:minStock(o.id,p)})}));
+ document.getElementById("dIn").textContent=st.filter(s=>s.type==="IN").reduce((a,s)=>a+ +s.qty,0);document.getElementById("dOut").textContent=st.filter(s=>s.type==="OUT").reduce((a,s)=>a+ +s.qty,0);document.getElementById("dEmp").textContent=emps.length;document.getElementById("dPresent").textContent=present.size;document.getElementById("dOutlet").textContent=outs.length;document.getElementById("dRefill").textContent=new Set(ref.map(x=>x.o.id)).size;
+ let groups={};outs.forEach(o=>groups[o.region]=(groups[o.region]||0)+1);document.getElementById("areaSummary").innerHTML=Object.entries(groups).map(([r,n])=>`<div class="report-row"><b>${esc(r)}</b><br>${n} outlet aktif</div>`).join("")||"<div class=empty>Tidak ada data sesuai filter.</div>";
+ let missing=emps.filter(e=>!present.has(e.id)),html=`<div class="report-row"><b>🔴 Refill prioritas:</b> ${ref.length} item</div><div class="report-row"><b>👤 Belum hadir:</b> ${missing.length} orang</div><div class="report-row"><b>⏳ Pending manual:</b> ${pending().length}</div><div class="report-row"><b>📦 Pergerakan:</b> IN ${st.filter(s=>s.type==="IN").reduce((a,s)=>a+ +s.qty,0)} pcs • OUT ${st.filter(s=>s.type==="OUT").reduce((a,s)=>a+ +s.qty,0)} pcs</div>`;
+ document.getElementById("priority").innerHTML=html;
+}
+function renderAttendance(){
+ let f=getF("att"),arr=db.attendance.filter(a=>{let o=out(a.outlet);return inDateFilter(a.date,f)&&(!f.region||o?.region===f.region)&&(!f.trade||o?.trade===f.trade)&&(!f.outlet||a.outlet===f.outlet)});
+ document.getElementById("attTable").innerHTML=arr.sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).map(a=>{let e=emp(a.employee),o=oi(a.outlet);return `<tr><td>${a.date}<br>${a.time}</td><td><b>${esc(e?.name||"-")}</b><br><span class=muted>${esc(e?.position||"")}</span></td><td>${esc(o.region)}</td><td>${esc(o.trade)}</td><td>${esc(o.name)}</td><td>${esc(a.method)}</td><td>${a.locationVerified?"✅ Terverifikasi":"⚠️ Tidak terverifikasi"}</td><td>${a.distance!=null?Math.round(a.distance)+" m":"-"}</td><td><span class="badge ${a.status==="Hadir"?"ok":a.status==="Pending"?"warn":"bad"}">${a.status}</span></td><td>${canManage()?`<button class="btn danger" onclick="deleteAttendance('${a.id}')">Hapus</button>`:"-"}</td></tr>`}).join("")||"<tr><td colspan=10 class=empty>Belum ada data.</td></tr>"
+}
+function renderApproval(){
+ let arr=pending();document.getElementById("approvalTable").innerHTML=arr.map(a=>{let e=emp(a.employee),o=oi(a.outlet);return `<tr><td>${a.date}<br>${a.time}</td><td>${esc(e?.name||"-")}</td><td>${esc(o.region)}</td><td>${esc(o.trade)}</td><td>${esc(o.name)}</td><td>${esc(a.reason||"-")}</td><td><span class="badge warn">Menunggu</span></td><td>${canManage()?`<button class="btn green" onclick="approval('${a.id}',1)">Approve</button> <button class="btn danger" onclick="approval('${a.id}',0)">Reject</button>`:"Manager/Admin only"}</td></tr>`}).join("")||"<tr><td colspan=8 class=empty>Tidak ada pending approval.</td></tr>"
+}
+function approval(id,yes){if(!canManage())return alert("Hanya Manager/Admin.");let a=db.attendance.find(x=>x.id===id);a.status=yes?"Hadir":"Rejected";a.approvedBy=session.user;a.approvedAt=new Date().toISOString();save();renderAll()}
+function deleteAttendance(id){if(!canManage())return; if(!confirm("Hapus data absensi ini?"))return;db.attendance=db.attendance.filter(x=>x.id!==id);save();renderAll()}
+
+function outletOptions(selected=""){
+ const active=db.outlets.filter(o=>o.status==="Aktif");
+ return active.map(o=>`<option value="${o.id}" ${o.id===selected?"selected":""}>${esc(o.region)} → ${esc(o.trade)} → ${esc(o.name)}</option>`).join("");
+}
+function openManualAttendance(){
+ modal("Absen Manual",`<div class="formgrid"><div class=field><label>Karyawan</label><select id=mEmp>${activeEmployees().map(e=>`<option value="${e.id}">${esc(e.name)} — ${esc(e.position)}</option>`).join("")}</select></div><div class="field"><label>Lokasi Absen</label><select id=mOutlet>${outletOptions()}</select></div><div class=field><label>Tanggal</label><input id=mDate type=date value="${today()}"></div><div class=field><label>Jam</label><input id=mTime type=time value="${nowTime()}"></div><div class=field><label>Alasan</label><input id=mReason placeholder="Lupa absen / perangkat bermasalah"></div><div class="field full"><label>Catatan</label><textarea id=mNote></textarea></div></div><div class=note>Karyawan tidak terikat outlet tetap. Pilih <b>lokasi absen</b> sesuai tempat karyawan berada saat itu. Pengajuan manual akan <b>Pending</b> dan harus disetujui Manager/Admin.</div><button class="btn primary" style="margin-top:12px" onclick="saveManual()">Kirim Pengajuan</button>`)
+}
+function saveManual(){
+ let eid=mEmp.value,e=emp(eid),oid=mOutlet.value;if(!e||!oid)return alert("Karyawan dan lokasi absen wajib dipilih.");
+ db.attendance.push({id:uid("att"),employee:eid,outlet:oid,date:mDate.value,time:mTime.value,method:"Manual",status:"Pending",reason:mReason.value,note:mNote.value,locationVerified:false});save();closeModal();renderAll();alert("Pengajuan manual masuk ke Approval Manager.")
+}
+async function openCamera(){
+ window.currentGeo=null;
+ modal("Selfie + Verifikasi Jangkauan Outlet",`<div class=note>Browser akan meminta akses kamera dan lokasi. Karyawan <b>tidak terikat outlet tetap</b>, jadi pilih outlet tempat karyawan sedang absen. Sistem akan memeriksa GPS terhadap outlet yang dipilih.</div><video id=video class=camera autoplay playsinline></video><div class=field><label>Karyawan</label><select id=cEmp>${activeEmployees().map(e=>`<option value="${e.id}">${esc(e.name)} — ${esc(e.position)}</option>`).join("")}</select></div><div class="field"><label>Lokasi Absen</label><select id=cOutlet>${outletOptions()}</select></div><div id=geoStatus class=note>Menunggu lokasi...</div><button class="btn primary" onclick="captureGeoAttendance()">📸 Ambil Foto + Verifikasi</button> <button class="btn ghost" onclick="closeModal()">Tutup</button>`)
+ try{cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:false});video.srcObject=cameraStream}catch(e){geoStatus.textContent="Kamera gagal diakses: "+e.message}
+ const refreshGeo=()=>{if(!window.currentGeo)return;let o=out(cOutlet.value);if(!o){geoStatus.textContent="Pilih lokasi absen.";return}let d=distance(currentGeo.coords.latitude,currentGeo.coords.longitude,+o.lat,+o.lng);geoStatus.innerHTML=`Lokasi ditemukan. Jarak ke <b>${esc(o.name)}</b>: <span class=distance>${Math.round(d)} meter</span> • Radius: ${o.radius} m • ${d<=+o.radius?"✅ Dalam jangkauan":"❌ Di luar jangkauan"}`};
+ cOutlet.addEventListener("change",refreshGeo);
+ if(navigator.geolocation)navigator.geolocation.getCurrentPosition(pos=>{window.currentGeo=pos;refreshGeo()},err=>geoStatus.textContent="Lokasi tidak tersedia: "+err.message,{enableHighAccuracy:true,timeout:10000,maximumAge:0})
+}
+function distance(a,b,c,d){let R=6371000,x=(c-a)*Math.PI/180,y=(d-b)*Math.PI/180,z=Math.sin(x/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
+function captureGeoAttendance(){
+ let e=emp(cEmp.value),o=out(cOutlet.value);if(!e||!o||!window.currentGeo)return alert("Karyawan, lokasi absen, dan GPS wajib tersedia.");
+ let d=distance(currentGeo.coords.latitude,currentGeo.coords.longitude,+o.lat,+o.lng);if(d>+o.radius)return alert(`Di luar jangkauan outlet. Jarak ${Math.round(d)} m, radius ${o.radius} m.`);
+ let v=document.getElementById("video"),can=document.createElement("canvas");can.width=v.videoWidth||640;can.height=v.videoHeight||480;can.getContext("2d").drawImage(v,0,0,can.width,can.height);
+ db.attendance.push({id:uid("att"),employee:e.id,outlet:o.id,date:today(),time:nowTime(),method:"Selfie + GPS",status:"Hadir",locationVerified:true,distance:d,lat:currentGeo.coords.latitude,lng:currentGeo.coords.longitude,photo:can.toDataURL("image/jpeg",.5)});save();closeModal();renderAll();alert("Absensi berhasil dan lokasi terverifikasi.")
+}
+function stopCamera(){if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null}}
+
+function openEmployee(id=""){
+ let x=id?emp(id):{name:"",position:"Staff Outlet",status:"Aktif",userId:""};
+ let linked=x.userId?(db.users||[]).find(u=>u.id===x.userId):null;
+ modal(id?"Edit Karyawan":"Tambah Karyawan",`<div class=formgrid><div class=field><label>Nama</label><input id=eName value="${esc(x.name)}"></div><div class=field><label>Jabatan</label><input id=ePosition value="${esc(x.position)}"></div><div class=field><label>Status</label><select id=eStatus><option ${x.status==="Aktif"?"selected":""}>Aktif</option><option ${x.status==="Nonaktif"?"selected":""}>Nonaktif</option></select></div><div class="field full"><label>🔐 Akun Login (opsional)</label><div class=note>Isi Username + Password untuk otomatis membuat akun login karyawan. Role default <b>Sales</b>. Akun dapat dipakai untuk absen di outlet mana pun.</div></div><div class=field><label>Username</label><input id=eUsername value="${esc(linked?.username||"")}" placeholder="contoh: sales01"></div><div class=field><label>Password</label><input id=ePassword type=password value="${esc(linked?.password||"")}" placeholder="Password login"></div><div class=field><label>Role Login</label><select id=eRole>${["Sales","Staff","Supervisor","HR","Manager","Admin"].map(r=>`<option ${r===(linked?.role||"Sales")?"selected":""}>${r}</option>`).join("")}</select></div><div class=field><label>Status Akun</label><select id=eUserStatus><option ${(linked?.status||"Aktif")==="Aktif"?"selected":""}>Aktif</option><option ${linked?.status==="Nonaktif"?"selected":""}>Nonaktif</option></select></div></div><div class=note>📍 Karyawan sekarang <b>tidak memiliki outlet tetap</b>. Lokasi tempat absen dipilih saat melakukan absensi, sehingga karyawan bisa berpindah outlet beberapa kali dalam sehari.</div><button class="btn primary" onclick="saveEmployee('${id}')">Simpan</button> ${id?`<button class="btn danger" onclick="removeEmployee('${id}')">Hapus</button>`:""}`)
+}
+function saveEmployee(id){
+ let old=id?emp(id):null,name=eName.value.trim(),position=ePosition.value.trim(),status=eStatus.value,username=eUsername.value.trim(),password=ePassword.value,role=eRole.value,userStatus=eUserStatus.value;
+ if(!name)return alert("Nama wajib.");
+ if(username&&!password)return alert("Password wajib diisi jika Username Login digunakan.");
+ if(username&&(db.users||[]).some(u=>u.username===username&&u.id!==old?.userId))return alert("Username sudah dipakai.");
+ let userId=old?.userId||"";
+ if(username){
+   let u=userId?(db.users||[]).find(z=>z.id===userId):null;
+   if(!u){userId=uid("usr");u={id:userId,username:"",password:"",name:"",role:"Sales",status:"Aktif"};db.users.push(u)}
+   Object.assign(u,{username,password,name,role,status:userStatus});
+ }else if(userId){let u=(db.users||[]).find(z=>z.id===userId);if(u)u.status="Nonaktif";}
+ let x={id:id||uid("emp"),name,position,status,userId};
+ if(id)Object.assign(old,x);else db.employees.push(x);
+ save();closeModal();renderAll();alert(username?"Karyawan dan akun login berhasil disimpan.":"Karyawan berhasil disimpan.")
+}
+function removeEmployee(id){if(!confirm("Hapus karyawan? Jika masih memiliki histori, sebaiknya gunakan Nonaktif."))return;let e=emp(id);if(e?.userId){let u=(db.users||[]).find(z=>z.id===e.userId);if(u&&u.username!=="admin")db.users=db.users.filter(z=>z.id!==e.userId)}db.employees=db.employees.filter(x=>x.id!==id);save();closeModal();renderAll()}
+
+function productVisual(p){
+ let icon="🍦",tone="mint",short=p;
+ if(p.includes("Slay Sally")){icon="🍓";tone="pink"}
+ else if(p.includes("Ichi-Go")){icon="🍓";tone="rose"}
+ else if(p.includes("Cookie Dough")){icon="🍪";tone="cream"}
+ else if(p.includes("Bean Missin")){icon="🍵";tone="green"}
+ let size=p.endsWith("100ml")?"100ml":"330ml";
+ return `<div class="pv ${tone}"><div class="pv-cup">${icon}</div><div class="pv-info"><b>${esc(short)}</b><small>${size}</small></div></div>`;
+}
+let stockInputRows=[];
+function stockRowHtml(row,i,options){
+ return `<div class="stock-entry" data-row="${i}"><div class="stock-entry-head"><span>Varian ${i+1}</span>${stockInputRows.length>1?`<button type="button" class="btn danger mini" onclick="removeStockRow(${i})">Hapus</button>`:""}</div><div class="stock-entry-grid"><div class="field full"><label>Produk</label><select id="sProduct${i}">${options.map(p=>`<option value="${esc(p)}" ${p===row.product?"selected":""}>${esc(p)}</option>`).join("")}</select></div><div class="field"><label>Qty</label><input id="sQty${i}" type="number" min="1" value="${row.qty||1}"></div><div class="field"><label>Catatan</label><input id="sNote${i}" value="${esc(row.note||"")}"></div></div></div>`;
+}
+function renderStockRows(){
+ let host=document.getElementById("stockRows"); if(!host)return;
+ let o=out(sOutlet.value), options=outletProducts(o);
+ host.innerHTML=stockInputRows.map((r,i)=>stockRowHtml(r,i,options)).join("");
+}
+function addStockRow(){
+ let o=out(sOutlet.value), options=outletProducts(o);
+ if(!options.length)return alert("Outlet belum memiliki produk yang diaktifkan.");
+ stockInputRows.push({product:options[0],qty:1,note:""});
+ renderStockRows();
+}
+function removeStockRow(i){stockInputRows.splice(i,1);if(!stockInputRows.length)addStockRow();renderStockRows();}
+function openOutlet(id=""){
+ let x=id?out(id):{region:db.regions[0],trade:db.trades[0],name:"",lat:"",lng:"",radius:300,status:"Aktif",products:[...PRODUCTS]};
+ const activeProducts=outletProducts(x);
+ modal(id?"Edit Outlet":"Tambah Outlet",`<div class=formgrid><div class=field><label>Wilayah</label><select id=oRegion>${db.regions.map(r=>`<option ${r===x.region?"selected":""}>${esc(r)}</option>`).join("")}</select></div><div class=field><label>Modern Trade / Supermarket</label><select id=oTrade>${db.trades.map(t=>`<option ${t===x.trade?"selected":""}>${esc(t)}</option>`).join("")}</select></div><div class="field full"><label>Nama Outlet</label><input id=oName value="${esc(x.name)}"></div><div class=field><label>Latitude</label><input id=oLat type=number step=any value="${x.lat}"></div><div class=field><label>Longitude</label><input id=oLng type=number step=any value="${x.lng}"></div><div class=field><label>Radius Jangkauan (meter)</label><input id=oRadius type=number value="${x.radius||300}"></div><div class=field><label>Status</label><select id=oStatus><option ${x.status==="Aktif"?"selected":""}>Aktif</option><option ${x.status==="Nonaktif"?"selected":""}>Nonaktif</option></select></div><div class="field full"><label>🍦 Produk & Kemasan yang Dijual di Outlet Ini</label><div class="note">Centang hanya varian/kemasan yang memang dijual outlet. Pilihan ini mengatur produk yang muncul di Stock dan Inventory.</div><div class="product-pick product-pick-visual">${PRODUCTS.map((p,i)=>`<label class="product-choice"><input type="checkbox" class="oProduct" value="${esc(p)}" ${activeProducts.includes(p)?"checked":""}>${productVisual(p)}</label>`).join("")}</div></div></div><div class=note>Lu bisa mengubah pilihan produk kapan saja. Produk yang tidak dicentang tidak muncul untuk outlet tersebut.</div><button class="btn primary" onclick="saveOutlet('${id}')">Simpan</button> ${id?`<button class="btn danger" onclick="removeOutlet('${id}')">Hapus</button>`:""}`)
+}
+function saveOutlet(id){let products=[...document.querySelectorAll(".oProduct:checked")].map(e=>e.value);let x={id:id||uid("out"),region:oRegion.value,trade:oTrade.value,name:oName.value.trim(),lat:+oLat.value,lng:+oLng.value,radius:+oRadius.value,status:oStatus.value,products};if(!x.name||!x.lat||!x.lng)return alert("Nama dan koordinat outlet wajib diisi.");if(!products.length)return alert("Pilih minimal 1 produk yang dijual outlet.");if(id)Object.assign(out(id),x);else db.outlets.push(x);save();closeModal();renderAll()}
+function removeOutlet(id){if(db.employees.some(e=>e.outlet===id)||db.stock.some(s=>s.outlet===id)||db.attendance.some(a=>a.outlet===id)){return alert("Outlet masih memiliki karyawan atau histori transaksi/absensi. Gunakan status Nonaktif agar histori tetap aman.")}if(confirm("Hapus outlet?")){db.outlets=db.outlets.filter(x=>x.id!==id);save();closeModal();renderAll()}}
+function openRegion(){modal("Tambah Wilayah",`<div class=field><label>Nama Wilayah</label><input id=newRegion></div><button class="btn primary" onclick="addRegion()">Tambah</button>`)}
+function addRegion(){let x=newRegion.value.trim();if(!x)return;if(db.regions.includes(x))return alert("Sudah ada.");db.regions.push(x);save();closeModal();renderAll()}
+function openTrade(){modal("Tambah Modern Trade",`<div class=field><label>Nama Supermarket / Modern Trade</label><input id=newTrade></div><button class="btn primary" onclick="addTrade()">Tambah</button>`)}
+function addTrade(){let x=newTrade.value.trim();if(!x)return;if(db.trades.includes(x))return alert("Sudah ada.");db.trades.push(x);save();closeModal();renderAll()}
+
+function openStock(id=""){
+ let x=id?db.stock.find(s=>s.id===id):{date:today(),type:"IN",outlet:db.outlets.find(o=>o.status==="Aktif")?.id||"",product:PRODUCTS[0],qty:1,note:""};
+ let selectedOutlet=out(x.outlet)||db.outlets.find(o=>o.status==="Aktif");
+ let prods=outletProducts(selectedOutlet); if(!prods.includes(x.product)) prods=[x.product,...prods];
+ stockInputRows=[{product:x.product,qty:x.qty||1,note:x.note||""}];
+ modal(id?"Edit Stock":"Input Stock",`<div class=formgrid><div class=field><label>Tanggal</label><input id=sDate type=date value="${x.date}"></div><div class=field><label>Jenis</label><select id=sType><option ${x.type==="IN"?"selected":""}>IN</option><option ${x.type==="OUT"?"selected":""}>OUT</option></select></div><div class="field full"><label>Wilayah → Supermarket → Outlet</label><select id=sOutlet onchange="refreshStockProducts()">${db.outlets.filter(o=>o.status==="Aktif").map(o=>`<option value="${o.id}" ${o.id===x.outlet?"selected":""}>${esc(o.region)} → ${esc(o.trade)} → ${esc(o.name)}</option>`).join("")}</select></div></div><div id="stockRows"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="btn ghost" onclick="addStockRow()">＋ Tambah Varian</button></div><div style="margin-top:12px"><button class="btn primary" onclick="saveStock('${id}')">Simpan ${id?"Perubahan":"Semua Stock"}</button> ${id?`<button class="btn danger" onclick="voidStock('${id}')">Void / Hapus</button>`:""}</div><div class=note style="margin-top:10px">Sekarang lu bisa input beberapa varian sekaligus dalam satu transaksi Stock IN/OUT. Semua varian tetap tersimpan sebagai transaksi terpisah agar Inventory dan histori tetap rapi.</div>`);
+ renderStockRows();
+}
+function refreshStockProducts(){
+ let o=out(sOutlet.value),prods=outletProducts(o);
+ stockInputRows.forEach(r=>{if(!prods.includes(r.product))r.product=prods[0]||"";});
+ renderStockRows();
+}
+function saveStock(id){
+ if(id){
+   let row=stockInputRows[0]||{};
+   let x={id,date:sDate.value,type:sType.value,outlet:sOutlet.value,product:row.product,qty:+row.qty,note:row.note||"",status:"POSTED"};
+   x.qty=+(document.getElementById("sQty0")?.value||0); x.note=document.getElementById("sNote0")?.value||""; x.product=document.getElementById("sProduct0")?.value||row.product;
+   if(!x.qty||x.qty<1)return alert("Qty harus > 0.");
+   Object.assign(db.stock.find(s=>s.id===id),x);
+ }else{
+   let rows=stockInputRows.map((r,i)=>({date:sDate.value,type:sType.value,outlet:sOutlet.value,product:document.getElementById("sProduct"+i)?.value||r.product,qty:+(document.getElementById("sQty"+i)?.value||0),note:document.getElementById("sNote"+i)?.value||"",status:"POSTED"}));
+   if(!rows.length)return alert("Tambahkan minimal 1 varian.");
+   if(rows.some(r=>!r.product||!r.qty||r.qty<1))return alert("Semua varian harus memiliki produk dan Qty > 0.");
+   rows.forEach(r=>db.stock.push({id:uid("stk"),...r}));
+ }
+ save();closeModal();renderAll();
+}
+function voidStock(id){if(!canManage())return alert("Admin/Manager only.");let s=db.stock.find(x=>x.id===id);let r=prompt("Alasan VOID:");if(r===null)return;s.status="VOID";s.voidBy=session.user;s.voidReason=r;s.voidAt=new Date().toISOString();save();closeModal();renderAll()}
+function renderStock(){let f=getF("stock"),arr=db.stock.filter(s=>{let o=out(s.outlet);return s.status==="POSTED"&&inDateFilter(s.date,f)&&(!f.region||o?.region===f.region)&&(!f.trade||o?.trade===f.trade)&&(!f.outlet||s.outlet===f.outlet)});document.getElementById("stockTable").innerHTML=arr.sort((a,b)=>b.date.localeCompare(a.date)).map(s=>{let o=oi(s.outlet);return `<tr><td>${s.date}</td><td><span class="badge ${s.type==="IN"?"ok":"info"}">${s.type}</span></td><td>${esc(o.region)}</td><td>${esc(o.trade)}</td><td>${esc(o.name)}</td><td>${esc(s.product)}</td><td><b>${s.qty}</b></td><td>POSTED</td><td>${canManage()?`<button class="btn lav" onclick="openStock('${s.id}')">Edit</button> <button class="btn danger" onclick="voidStock('${s.id}')">Void</button>`:"-"}</td></tr>`}).join("")||"<tr><td colspan=9 class=empty>Tidak ada transaksi sesuai filter.</td></tr>"}
+
+function renderInventory(){let f=getF("inv"),outs=db.outlets.filter(o=>o.status==="Aktif"&&(!f.region||o.region===f.region)&&(!f.trade||o.trade===f.trade)&&(!f.outlet||o.id===f.outlet)),rows=[];outs.forEach(o=>outletProducts(o).forEach(p=>{let i=movement(o.id,p,"IN",f),outq=movement(o.id,p,"OUT",f),bal=i-outq,min=minStock(o.id,p);rows.push({o,p,i,outq,bal,min})}));document.getElementById("invTable").innerHTML=rows.map(x=>`<tr><td>${esc(x.o.region)}</td><td>${esc(x.o.trade)}</td><td>${esc(x.o.name)}</td><td>${esc(x.p)}</td><td>${x.i}</td><td>${x.outq}</td><td><b>${x.bal}</b></td><td>${x.min}</td><td><span class="badge ${x.bal<=x.min?"bad":"ok"}">${x.bal<=x.min?"PERLU REFILL":"AMAN"}</span></td><td><button class="btn lav" onclick="setMin('${x.o.id}','${esc(x.p)}',${x.min})">Set Min</button></td></tr>`).join("")||"<tr><td colspan=10 class=empty>Tidak ada data.</td></tr>"}
+function setMin(oid,p,v){let x=prompt("Minimum stock "+p,v);if(x===null)return;if(isNaN(+x)||+x<0)return alert("Tidak valid.");db.minimum[oid+"|"+p]=+x;save();renderAll()}
+
+function assistantData(prefix="assistant"){
+ const f=getF(prefix);
+ const selectedOutlets=db.outlets.filter(o=>o.status==="Aktif"&&(!f.region||o.region===f.region)&&(!f.trade||o.trade===f.trade)&&(!f.outlet||o.id===f.outlet));
+ const st=db.stock.filter(s=>s.status==="POSTED"&&inDateFilter(s.date,f)&&selectedOutlets.some(o=>o.id===s.outlet));
+ const emps=activeEmployees();
+ const official=approved().filter(a=>inDateFilter(a.date,f)&&emps.some(e=>e.id===a.employee));
+ const present=new Set(official.map(a=>a.employee));
+ const pend=pending().filter(a=>inDateFilter(a.date,f)&&selectedOutlets.some(o=>o.id===a.outlet));
+ const ref=[];
+ selectedOutlets.forEach(o=>outletProducts(o).forEach(p=>{
+   const i=movement(o.id,p,"IN",f),q=movement(o.id,p,"OUT",f),stock=i-q,min=minStock(o.id,p);
+   if(stock<=min)ref.push({o,p,i,q,stock,min});
+ }));
+ const missing=emps.filter(e=>!present.has(e.id));
+ const ins=st.filter(s=>s.type==="IN").reduce((n,s)=>n+ +s.qty,0);
+ const outsQty=st.filter(s=>s.type==="OUT").reduce((n,s)=>n+ +s.qty,0);
+ return {f,selectedOutlets,st,emps,present,pend,ref,missing,ins,outsQty};
+}
+function generateAssistant(){
+ const d=assistantData();
+ const tradeMap={},regionMap={};
+ d.selectedOutlets.forEach(o=>{tradeMap[o.trade]=(tradeMap[o.trade]||0)+1;regionMap[o.region]=(regionMap[o.region]||0)+1});
+ const reportDate=d.f.date||((d.f.month&&d.f.year)?`${d.f.year}-${d.f.month}`:(d.f.year||"Semua periode"));
+ const refCount=new Set(d.ref.map(x=>x.o.id)).size;
+ const html=`<div class="note"><b>Periode laporan:</b> ${esc(reportDate)} • <b>Scope:</b> ${esc(d.f.region||"Semua wilayah")} / ${esc(d.f.trade||"Semua supermarket")} / ${esc(out(d.f.outlet)?.name||"Semua outlet")}</div>
+ <div class=assistant-grid>
+  <div class=report-card><h4>📦 Pergerakan Stock</h4><div class=report-row>Stock IN <b>${d.ins} pcs</b></div><div class=report-row>Stock OUT <b>${d.outsQty} pcs</b></div><div class=report-row>Stock bersih <b>${d.ins-d.outsQty} pcs</b></div></div>
+  <div class=report-card><h4>🏪 Coverage Outlet</h4><div class=report-row>Outlet aktif <b>${d.selectedOutlets.length}</b></div><div class=report-row>Outlet perlu refill <b>${refCount}</b></div><div class=report-row>Supermarket <b>${Object.keys(tradeMap).length}</b></div></div>
+  <div class=report-card><h4>👥 Kehadiran</h4><div class=report-row>Karyawan aktif <b>${d.emps.length}</b></div><div class=report-row>Hadir resmi <b>${d.present.size}</b></div><div class=report-row>Belum hadir <b>${d.missing.length}</b></div><div class=report-row>Pending manual <b>${d.pend.length}</b></div></div>
+ </div>
+ <div class=section-title>🚨 1. Detail Refill per Outlet</div>
+ <div class=report-card>${d.ref.length?d.ref.map(x=>`<div class=report-row><b>${esc(x.o.region)} → ${esc(x.o.trade)} → ${esc(x.o.name)}</b><br>${esc(x.p)}<br>Stock IN: ${x.i} • Stock OUT: ${x.q} • <b>Stock: ${x.stock}</b> • Minimum: ${x.min}</div>`).join(""):"<div class=empty>Semua produk aman di atas minimum stock.</div>"}</div>
+ <div class=section-title>👤 2. Karyawan Belum Hadir</div>
+ <div class=report-card>${d.missing.length?d.missing.map(e=>{let o=oi(e.outlet);return `<div class=report-row><b>${esc(e.name)}</b> — ${esc(e.position)}<br>${esc(o.region)} → ${esc(o.trade)} → ${esc(o.name)}</div>`}).join(""):"<div class=empty>Semua karyawan pada filter sudah hadir resmi.</div>"}</div>
+ <div class=section-title>⏳ 3. Manual Attendance Menunggu Approval</div>
+ <div class=report-card>${d.pend.length?d.pend.map(a=>{let e=emp(a.employee),o=oi(a.outlet);return `<div class=report-row><b>${esc(e?.name||"-")}</b> — ${esc(o.name)}<br>${a.date} ${a.time} • ${esc(a.reason||"-")} • <span class="badge warn">Menunggu Approval</span></div>`}).join(""):"<div class=empty>Tidak ada pengajuan manual pending pada filter.</div>"}</div>
+ <div class=section-title>🏆 4. Rekap Supermarket</div>
+ <div class=report-card>${Object.entries(tradeMap).map(([t,n])=>`<div class=report-row><b>${esc(t)}</b> — ${n} outlet aktif</div>`).join("")||"<div class=empty>-</div>"}</div>
+ <div class=section-title>🗺️ 5. Rekap Wilayah</div>
+ <div class=report-card>${Object.entries(regionMap).map(([r,n])=>`<div class=report-row><b>${esc(r)}</b> — ${n} outlet aktif</div>`).join("")||"<div class=empty>-</div>"}</div>
+ <div class=section-title>💡 6. Rekomendasi</div>
+ <div class=report-card><div class=report-row>1. Prioritaskan <b>${refCount} outlet</b> untuk pengecekan/refill.</div><div class=report-row>2. Follow-up <b>${d.missing.length} karyawan</b> yang belum punya absensi resmi.</div><div class=report-row>3. Selesaikan <b>${d.pend.length} approval manual</b> sebelum closing.</div><div class=report-row>4. Gunakan filter yang sama saat export agar rekap Excel dan dashboard konsisten.</div></div>`;
+ document.getElementById("assistantResult").innerHTML=html;
+}
+function shareWhatsApp(){
+ const text=buildWhatsAppReport(today());
+ const url="https://wa.me/?text="+encodeURIComponent(text);
+ window.open(url,"_blank","noopener,noreferrer");
+}
+function exportXLSX(name,sheets){if(typeof XLSX==="undefined"){alert("Library Excel belum termuat. Pastikan internet aktif.");return}let wb=XLSX.utils.book_new();Object.entries(sheets).forEach(([n,rows])=>{let ws=XLSX.utils.json_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,n.slice(0,31))});XLSX.writeFile(wb,name)}
+function exportAttendance(){let f=getF("att"),rows=db.attendance.filter(a=>{let o=out(a.outlet);return inDateFilter(a.date,f)&&(!f.region||o?.region===f.region)&&(!f.trade||o?.trade===f.trade)&&(!f.outlet||a.outlet===f.outlet)}).map(a=>{let e=emp(a.employee),o=oi(a.outlet);return {"Tanggal":a.date,"Jam":a.time,"Karyawan":e?.name||"-","Wilayah":o.region,"Modern Trade":o.trade,"Outlet":o.name,"Metode":a.method,"Lokasi Terverifikasi":a.locationVerified?"Ya":"Tidak","Jarak Meter":a.distance?Math.round(a.distance):"","Status":a.status,"Approved By":a.approvedBy||""}});exportXLSX("Rekap_Absensi_Sour_Sally.xlsx",{"Absensi":rows})}
+function exportStock(){let f=getF("stock"),rows=db.stock.filter(s=>{let o=out(s.outlet);return s.status==="POSTED"&&inDateFilter(s.date,f)&&(!f.region||o?.region===f.region)&&(!f.trade||o?.trade===f.trade)&&(!f.outlet||s.outlet===f.outlet)}).map(s=>{let o=oi(s.outlet);return {"Tanggal":s.date,"Jenis":s.type,"Wilayah":o.region,"Modern Trade":o.trade,"Outlet":o.name,"Produk":s.product,"Qty":s.qty,"Status":s.status,"Catatan":s.note||""}});exportXLSX("Rekap_Stock_IN_OUT_Sour_Sally.xlsx",{"Stock_IN_OUT":rows})}
+function exportInventory(){let f=getF("inv"),rows=[];db.outlets.filter(o=>o.status==="Aktif"&&(!f.region||o.region===f.region)&&(!f.trade||o.trade===f.trade)&&(!f.outlet||o.id===f.outlet)).forEach(o=>outletProducts(o).forEach(p=>{let i=movement(o.id,p,"IN",f),q=movement(o.id,p,"OUT",f);rows.push({"Wilayah":o.region,"Modern Trade":o.trade,"Outlet":o.name,"Produk":p,"Stock IN":i,"Stock OUT":q,"Stock":i-q,"Minimum":minStock(o.id,p),"Status":i-q<=minStock(o.id,p)?"PERLU REFILL":"AMAN"})}));exportXLSX("Inventory_Sour_Sally.xlsx",{"Inventory":rows})}
+function exportAssistant(){generateAssistant();let f=getF("assistant"),rows=[];db.outlets.filter(o=>o.status==="Aktif"&&(!f.region||o.region===f.region)&&(!f.trade||o.trade===f.trade)&&(!f.outlet||o.id===f.outlet)).forEach(o=>outletProducts(o).forEach(p=>{let i=movement(o.id,p,"IN",f),q=movement(o.id,p,"OUT",f),b=i-q;rows.push({"Wilayah":o.region,"Modern Trade":o.trade,"Outlet":o.name,"Produk":p,"IN":i,"OUT":q,"Stock":b,"Minimum":minStock(o.id,p),"Status":b<=minStock(o.id,p)?"PERLU REFILL":"AMAN"})}));exportXLSX("Assistant_Operasional_Sour_Sally.xlsx",{"Detail_Stock":rows})}
+
+function renderEmployees(){let f=document.getElementById("empStatus")?.value||"",q=(document.getElementById("empSearch")?.value||"").trim().toLowerCase(),arr=db.employees.filter(e=>(!f||e.status===f)&&(!q||String(e.name||"").toLowerCase().includes(q)));document.getElementById("empTable").innerHTML=arr.map(e=>{let u=e.userId?(db.users||[]).find(z=>z.id===e.userId):null;let account=u?`<span class="badge info">🔐 ${esc(u.username)} • ${esc(u.role)}</span>`:`<button class="btn primary" onclick="openEmployee('${e.id}')">＋ Buat Akun</button>`;return `<tr><td><b>${esc(e.name)}</b></td><td>${esc(e.position)}</td><td>${account}</td><td><span class="badge ${e.status==="Aktif"?"ok":"bad"}">${e.status}</span></td><td><button class="btn lav" onclick="openEmployee('${e.id}')">Edit</button><button class="btn danger" onclick="removeEmployee('${e.id}')">Hapus</button></td></tr>`}).join("")||"<tr><td colspan=5 class=empty>-</td></tr>"}
+function renderOutlets(){document.getElementById("outTable").innerHTML=db.outlets.map(o=>`<tr><td>${esc(o.region)}</td><td>${esc(o.trade)}</td><td><b>${esc(o.name)}</b></td><td>${o.lat}, ${o.lng}</td><td>${o.radius} m</td><td><span class="badge ${o.status==="Aktif"?"ok":"bad"}">${o.status}</span></td><td><button class="btn lav" onclick="openOutlet('${o.id}')">Edit</button><button class="btn danger" onclick="removeOutlet('${o.id}')">Hapus</button></td></tr>`).join("")||"<tr><td colspan=7 class=empty>-</td></tr>"}
+function updateRealtimeClock(){let now=new Date();let time=now.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});let date=now.toLocaleDateString("id-ID",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});let t=document.getElementById("liveTime"),d=document.getElementById("liveDate");if(t)t.textContent=time;if(d)d.textContent=date}
+updateRealtimeClock();setInterval(updateRealtimeClock,1000);
+window.addEventListener("online",()=>{if(!cloudReady)initRealtime();});
+loadFirebaseSDK()
+  .then(()=>initRealtime())
+  .catch(err=>{
+    console.error("Firebase SDK:",err);
+    setCloudStatus("🔴 Firebase SDK gagal dimuat","warn");
+  });
+function renderAll(){if(!session)return;mountFilters();wireFilterCascades();renderDashboard();renderAttendance();renderApproval();renderEmployees();renderOutlets();renderStock();renderInventory();renderUsers();renderWhatsAppSettings();if(document.getElementById("assistantResult").innerHTML==="")generateAssistant()}
+
+</script>
+</body>
+</html>

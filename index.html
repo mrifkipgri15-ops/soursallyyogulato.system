@@ -165,6 +165,345 @@ table{font-size:12px}th{background:#fff6fa;color:#657286}td{border-bottom:1px so
 .wa-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.wa-switch{display:flex;align-items:center;justify-content:space-between;background:#f4fbf8;border:1px solid #d8efe4;padding:11px 13px;border-radius:14px;margin-bottom:13px}.wa-switch b{font-size:13px}.wa-switch input{width:20px;height:20px;accent-color:#22b573}
 .wa-preview{border-radius:20px;overflow:hidden;background:#e9f6f0;border:1px solid #d5e9e2}.wa-preview-head{background:#17877b;color:#fff;padding:13px 15px;display:flex;gap:10px;align-items:center}.wa-avatar{width:38px;height:38px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:21px}.wa-preview-head b{display:block}.wa-preview-head small{opacity:.85}.wa-bubble{margin:13px;background:#fff;border-radius:16px;padding:13px;box-shadow:0 5px 16px rgba(0,0,0,.06);font-size:12px;line-height:1.55;color:#27394b}.wa-bubble .wa-banner{height:64px;border-radius:12px;background:linear-gradient(135deg,#ffd6e7,#d8f5e8);display:grid;place-items:center;color:#d34f83;font-weight:900;font-size:18px;margin-bottom:10px}.wa-report-preview{font-family:Arial,sans-serif}.wa-report-preview .sep{border-top:1px dashed #b7c9d7;margin:9px 0}.wa-report-preview .trade{font-weight:900;color:#175d9e}.wa-report-preview .outlet{font-weight:800}.wa-statusline{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:10px;padding:9px 11px;border-radius:12px;background:#f4f8fb;color:#61758a}.wa-status-dot{width:9px;height:9px;border-radius:50%;background:#22b573;display:inline-block}.wa-note{font-size:11px;color:#8194a8;line-height:1.5;margin-top:10px}.wa-chip{display:inline-block;padding:5px 9px;border-radius:999px;background:#fff0f6;color:#d34f83;font-weight:800;font-size:10px;margin:2px}
 @media(max-width:760px){.wa-auto-grid{grid-template-columns:1fr}.wa-two{grid-template-columns:1fr}.wa-settings-card,.wa-preview-card{padding:14px}}
+/* =========================
+   ASSISTANT MODERN UI
+   ========================= */
+
+.assistant-summary-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin:14px 0 20px;
+}
+
+.assistant-summary-card{
+  background:linear-gradient(135deg,#fff,#fff7fb);
+  border:1px solid #eadbe5;
+  border-radius:18px;
+  padding:15px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  box-shadow:0 5px 18px rgba(120,70,100,.07);
+}
+
+.assistant-summary-card small,
+.assistant-recap-card small,
+.attendance-stat small{
+  display:block;
+  color:#777;
+  font-size:12px;
+  margin-bottom:4px;
+}
+
+.assistant-summary-card strong{
+  font-size:19px;
+  color:#222;
+}
+
+.assistant-icon{
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#fff0f7;
+  font-size:21px;
+}
+
+.assistant-section{
+  margin-top:22px;
+}
+
+.assistant-section-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.assistant-section-title>span{
+  font-size:24px;
+}
+
+.assistant-section-title h3{
+  margin:0;
+  font-size:17px;
+}
+
+.assistant-section-title small{
+  color:#888;
+  font-size:12px;
+}
+
+.assistant-outlet-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+}
+
+.assistant-outlet-card{
+  background:#fff;
+  border:1px solid #eadde5;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 5px 18px rgba(100,60,90,.06);
+}
+
+.assistant-outlet-head{
+  padding:14px 15px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:linear-gradient(135deg,#fff5fa,#f7fffc);
+}
+
+.assistant-outlet-head strong{
+  display:block;
+  font-size:14px;
+}
+
+.assistant-outlet-head small{
+  display:block;
+  color:#888;
+  margin-top:3px;
+}
+
+.assistant-badge{
+  padding:5px 9px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:700;
+}
+
+.assistant-badge.danger{
+  background:#ffe7ef;
+  color:#d84a77;
+}
+
+.assistant-product-list{
+  padding:5px 15px;
+}
+
+.assistant-product-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:11px 0;
+  border-bottom:1px dashed #eadde5;
+}
+
+.assistant-product-row:last-child{
+  border-bottom:0;
+}
+
+.assistant-product-row strong{
+  font-size:13px;
+}
+
+.assistant-product-row small{
+  display:block;
+  color:#999;
+  margin-top:3px;
+}
+
+.assistant-stock-status{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  font-size:12px;
+  color:#d84a77;
+}
+
+.assistant-outlet-footer{
+  padding:10px 15px;
+  background:#faf7f9;
+  color:#777;
+  font-size:11px;
+}
+
+.assistant-attendance-box{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+
+.attendance-stat{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#fff;
+  border:1px solid #eadde5;
+  border-radius:15px;
+  padding:13px;
+}
+
+.attendance-stat>span{
+  font-size:21px;
+}
+
+.attendance-stat strong{
+  font-size:18px;
+}
+
+.assistant-name-list{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+.assistant-name-item{
+  padding:10px 12px;
+  border:1px solid #eadde5;
+  border-radius:12px;
+  background:#fff;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  font-size:13px;
+}
+
+.assistant-pending-box{
+  background:#fff8df;
+  border:1px solid #f0df9d;
+  border-radius:15px;
+  padding:14px;
+  color:#765d00;
+}
+
+.assistant-recap-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+
+.assistant-recap-card{
+  background:#fff;
+  border:1px solid #eadde5;
+  border-radius:16px;
+  padding:14px;
+}
+
+.assistant-recap-title{
+  font-weight:700;
+  margin-bottom:13px;
+}
+
+.assistant-recap-values{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.assistant-recap-values>div{
+  background:#faf7f9;
+  border-radius:10px;
+  padding:9px;
+}
+
+.assistant-recap-values strong{
+  font-size:17px;
+}
+
+.assistant-recommendations{
+  display:grid;
+  gap:10px;
+}
+
+.assistant-recommendation{
+  display:flex;
+  gap:12px;
+  padding:14px;
+  border-radius:15px;
+  border:1px solid #eadde5;
+}
+
+.assistant-recommendation>span{
+  font-size:21px;
+}
+
+.assistant-recommendation strong{
+  display:block;
+}
+
+.assistant-recommendation p{
+  margin:4px 0 0;
+  font-size:12px;
+  color:#777;
+}
+
+.assistant-recommendation.danger{
+  background:#fff1f5;
+}
+
+.assistant-recommendation.warning{
+  background:#fff9e8;
+}
+
+.assistant-recommendation.success{
+  background:#effbf5;
+}
+
+.assistant-empty{
+  padding:20px;
+  border-radius:15px;
+  background:#effbf5;
+  border:1px solid #ccebd9;
+  text-align:center;
+  color:#26704a;
+}
+
+@media(max-width:800px){
+
+  .assistant-summary-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .assistant-outlet-grid{
+    grid-template-columns:1fr;
+  }
+
+  .assistant-attendance-box{
+    grid-template-columns:1fr;
+  }
+
+  .assistant-name-list{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .assistant-recap-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+}
+
+@media(max-width:520px){
+
+  .assistant-summary-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .assistant-summary-card{
+    padding:11px;
+  }
+
+  .assistant-summary-card strong{
+    font-size:16px;
+  }
+
+  .assistant-icon{
+    width:36px;
+    height:36px;
+    font-size:18px;
+  }
+
+  .assistant-name-list,
+  .assistant-recap-grid{
+    grid-template-columns:1fr;
+  }
+
+}
 </style>
 </head>
 <body>
@@ -734,30 +1073,565 @@ function assistantData(prefix="assistant"){
  return {f,selectedOutlets,st,emps,present,pend,ref,missing,ins,outsQty};
 }
 function generateAssistant(){
- const d=assistantData();
- const tradeMap={},regionMap={};
- d.selectedOutlets.forEach(o=>{tradeMap[o.trade]=(tradeMap[o.trade]||0)+1;regionMap[o.region]=(regionMap[o.region]||0)+1});
- const reportDate=d.f.date||((d.f.month&&d.f.year)?`${d.f.year}-${d.f.month}`:(d.f.year||"Semua periode"));
- const refCount=new Set(d.ref.map(x=>x.o.id)).size;
- const html=`<div class="note"><b>Periode laporan:</b> ${esc(reportDate)} • <b>Scope:</b> ${esc(d.f.region||"Semua wilayah")} / ${esc(d.f.trade||"Semua supermarket")} / ${esc(out(d.f.outlet)?.name||"Semua outlet")}</div>
- <div class=assistant-grid>
-  <div class=report-card><h4>📦 Pergerakan Stock</h4><div class=report-row>Stock IN <b>${d.ins} pcs</b></div><div class=report-row>Stock OUT <b>${d.outsQty} pcs</b></div><div class=report-row>Stock bersih <b>${d.ins-d.outsQty} pcs</b></div></div>
-  <div class=report-card><h4>🏪 Coverage Outlet</h4><div class=report-row>Outlet aktif <b>${d.selectedOutlets.length}</b></div><div class=report-row>Outlet perlu refill <b>${refCount}</b></div><div class=report-row>Supermarket <b>${Object.keys(tradeMap).length}</b></div></div>
-  <div class=report-card><h4>👥 Kehadiran</h4><div class=report-row>Karyawan aktif <b>${d.emps.length}</b></div><div class=report-row>Hadir resmi <b>${d.present.size}</b></div><div class=report-row>Belum hadir <b>${d.missing.length}</b></div><div class=report-row>Pending manual <b>${d.pend.length}</b></div></div>
- </div>
- <div class=section-title>🚨 1. Detail Refill per Outlet</div>
- <div class=report-card>${d.ref.length?d.ref.map(x=>`<div class=report-row><b>${esc(x.o.region)} → ${esc(x.o.trade)} → ${esc(x.o.name)}</b><br>${esc(x.p)}<br>Stock IN: ${x.i} • Stock OUT: ${x.q} • <b>Stock: ${x.stock}</b> • Minimum: ${x.min}</div>`).join(""):"<div class=empty>Semua produk aman di atas minimum stock.</div>"}</div>
- <div class=section-title>👤 2. Karyawan Belum Hadir</div>
- <div class=report-card>${d.missing.length?d.missing.map(e=>{let o=oi(e.outlet);return `<div class=report-row><b>${esc(e.name)}</b> — ${esc(e.position)}<br>${esc(o.region)} → ${esc(o.trade)} → ${esc(o.name)}</div>`}).join(""):"<div class=empty>Semua karyawan pada filter sudah hadir resmi.</div>"}</div>
- <div class=section-title>⏳ 3. Manual Attendance Menunggu Approval</div>
- <div class=report-card>${d.pend.length?d.pend.map(a=>{let e=emp(a.employee),o=oi(a.outlet);return `<div class=report-row><b>${esc(e?.name||"-")}</b> — ${esc(o.name)}<br>${a.date} ${a.time} • ${esc(a.reason||"-")} • <span class="badge warn">Menunggu Approval</span></div>`}).join(""):"<div class=empty>Tidak ada pengajuan manual pending pada filter.</div>"}</div>
- <div class=section-title>🏆 4. Rekap Supermarket</div>
- <div class=report-card>${Object.entries(tradeMap).map(([t,n])=>`<div class=report-row><b>${esc(t)}</b> — ${n} outlet aktif</div>`).join("")||"<div class=empty>-</div>"}</div>
- <div class=section-title>🗺️ 5. Rekap Wilayah</div>
- <div class=report-card>${Object.entries(regionMap).map(([r,n])=>`<div class=report-row><b>${esc(r)}</b> — ${n} outlet aktif</div>`).join("")||"<div class=empty>-</div>"}</div>
- <div class=section-title>💡 6. Rekomendasi</div>
- <div class=report-card><div class=report-row>1. Prioritaskan <b>${refCount} outlet</b> untuk pengecekan/refill.</div><div class=report-row>2. Follow-up <b>${d.missing.length} karyawan</b> yang belum punya absensi resmi.</div><div class=report-row>3. Selesaikan <b>${d.pend.length} approval manual</b> sebelum closing.</div><div class=report-row>4. Gunakan filter yang sama saat export agar rekap Excel dan dashboard konsisten.</div></div>`;
- document.getElementById("assistantResult").innerHTML=html;
+
+  const el=document.getElementById("assistantResult");
+  if(!el)return;
+
+  const d=assistantData("assistant");
+
+  const nf=n=>Number(n||0).toLocaleString("id-ID");
+
+  const outletCount=d.selectedOutlets.length;
+  const supermarketCount=new Set(
+    d.selectedOutlets.map(o=>o.trade)
+  ).size;
+
+  const hadir=d.present.size;
+  const belum=d.missing.length;
+  const pendingCount=d.pend.length;
+
+  /* =========================
+     REFILL PER OUTLET
+     ========================= */
+
+  const refillByOutlet={};
+
+  d.ref.forEach(x=>{
+
+    const oid=x.o.id;
+
+    if(!refillByOutlet[oid]){
+      refillByOutlet[oid]={
+        outlet:x.o,
+        items:[]
+      };
+    }
+
+    refillByOutlet[oid].items.push(x);
+
+  });
+
+  const refillOutlets=Object.values(refillByOutlet);
+
+  /* =========================
+     REKAP SUPERMARKET
+     ========================= */
+
+  const tradeMap={};
+
+  d.selectedOutlets.forEach(o=>{
+
+    if(!tradeMap[o.trade]){
+      tradeMap[o.trade]={
+        outlet:0,
+        refill:0,
+        stockIn:0,
+        stockOut:0
+      };
+    }
+
+    tradeMap[o.trade].outlet++;
+
+    if(refillOutlets.some(x=>x.outlet.id===o.id)){
+      tradeMap[o.trade].refill++;
+    }
+
+  });
+
+  Object.values(tradeMap).forEach(x=>{
+
+    const outlets=d.selectedOutlets.filter(o=>o.trade===
+      Object.keys(tradeMap).find(k=>tradeMap[k]===x)
+    );
+
+  });
+
+  /* =========================
+     REKAP WILAYAH
+     ========================= */
+
+  const regionMap={};
+
+  d.selectedOutlets.forEach(o=>{
+
+    if(!regionMap[o.region]){
+      regionMap[o.region]={
+        outlet:0,
+        refill:0
+      };
+    }
+
+    regionMap[o.region].outlet++;
+
+    if(refillOutlets.some(x=>x.outlet.id===o.id)){
+      regionMap[o.region].refill++;
+    }
+
+  });
+
+  /* =========================
+     HTML
+     ========================= */
+
+  let html="";
+
+  html+=`
+    <div class="assistant-summary-grid">
+
+      <div class="assistant-summary-card">
+        <div class="assistant-icon">📦</div>
+        <div>
+          <small>Stock IN</small>
+          <strong>${nf(d.ins)} pcs</strong>
+        </div>
+      </div>
+
+      <div class="assistant-summary-card">
+        <div class="assistant-icon">📤</div>
+        <div>
+          <small>Stock OUT</small>
+          <strong>${nf(d.outsQty)} pcs</strong>
+        </div>
+      </div>
+
+      <div class="assistant-summary-card">
+        <div class="assistant-icon">🏪</div>
+        <div>
+          <small>Outlet Aktif</small>
+          <strong>${nf(outletCount)}</strong>
+        </div>
+      </div>
+
+      <div class="assistant-summary-card">
+        <div class="assistant-icon">⚠️</div>
+        <div>
+          <small>Perlu Refill</small>
+          <strong>${nf(refillOutlets.length)}</strong>
+        </div>
+      </div>
+
+      <div class="assistant-summary-card">
+        <div class="assistant-icon">👥</div>
+        <div>
+          <small>Hadir Resmi</small>
+          <strong>${nf(hadir)}</strong>
+        </div>
+      </div>
+
+      <div class="assistant-summary-card">
+        <div class="assistant-icon">⏳</div>
+        <div>
+          <small>Pending</small>
+          <strong>${nf(pendingCount)}</strong>
+        </div>
+      </div>
+
+    </div>
+  `;
+
+
+  /* =========================
+     REFILL
+     ========================= */
+
+  html+=`
+    <section class="assistant-section">
+      <div class="assistant-section-title">
+        <span>🚨</span>
+        <div>
+          <h3>Outlet Perlu Refill</h3>
+          <small>${nf(refillOutlets.length)} outlet perlu diperiksa</small>
+        </div>
+      </div>
+
+      <div class="assistant-outlet-grid">
+  `;
+
+  if(!refillOutlets.length){
+
+    html+=`
+      <div class="assistant-empty">
+        ✅ Semua outlet masih dalam batas minimum stok.
+      </div>
+    `;
+
+  }else{
+
+    refillOutlets.forEach(group=>{
+
+      const o=group.outlet;
+
+      html+=`
+        <div class="assistant-outlet-card">
+
+          <div class="assistant-outlet-head">
+            <div>
+              <strong>${esc(o.name||o.nama||"Outlet")}</strong>
+              <small>
+                ${esc(o.region||"-")} 
+                → 
+                ${esc(o.trade||"-")}
+              </small>
+            </div>
+
+            <span class="assistant-badge danger">
+              ${group.items.length} item
+            </span>
+          </div>
+
+          <div class="assistant-product-list">
+      `;
+
+      group.items.forEach(x=>{
+
+        html+=`
+          <div class="assistant-product-row">
+
+            <div>
+              <strong>${esc(x.p.name||x.p.nama||"-")}</strong>
+              <small>
+                Min. ${nf(x.min)} pcs
+              </small>
+            </div>
+
+            <div class="assistant-stock-status">
+              <span>Stock ${nf(x.stock)}</span>
+              <b>⚠️</b>
+            </div>
+
+          </div>
+        `;
+
+      });
+
+      html+=`
+          </div>
+
+          <div class="assistant-outlet-footer">
+            📍 ${esc(o.name||"Outlet")}
+          </div>
+
+        </div>
+      `;
+
+    });
+
+  }
+
+  html+=`
+      </div>
+    </section>
+  `;
+
+
+  /* =========================
+     KEHADIRAN
+     ========================= */
+
+  html+=`
+    <section class="assistant-section">
+
+      <div class="assistant-section-title">
+        <span>👥</span>
+        <div>
+          <h3>Kehadiran Karyawan</h3>
+          <small>Ringkasan berdasarkan filter Assistant</small>
+        </div>
+      </div>
+
+      <div class="assistant-attendance-box">
+
+        <div class="attendance-stat">
+          <span>🟢</span>
+          <div>
+            <small>Hadir resmi</small>
+            <strong>${nf(hadir)}</strong>
+          </div>
+        </div>
+
+        <div class="attendance-stat">
+          <span>🔴</span>
+          <div>
+            <small>Belum hadir</small>
+            <strong>${nf(belum)}</strong>
+          </div>
+        </div>
+
+        <div class="attendance-stat">
+          <span>🟡</span>
+          <div>
+            <small>Pending manual</small>
+            <strong>${nf(pendingCount)}</strong>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  `;
+
+
+  /* =========================
+     BELUM HADIR
+     ========================= */
+
+  if(d.missing.length){
+
+    html+=`
+      <section class="assistant-section">
+
+        <div class="assistant-section-title">
+          <span>🔴</span>
+          <div>
+            <h3>Karyawan Belum Hadir</h3>
+            <small>${nf(d.missing.length)} karyawan</small>
+          </div>
+        </div>
+
+        <div class="assistant-name-list">
+    `;
+
+    d.missing.forEach(e=>{
+
+      html+=`
+        <div class="assistant-name-item">
+          <span>👤</span>
+          <strong>${esc(e.name||e.nama||"-")}</strong>
+        </div>
+      `;
+
+    });
+
+    html+=`
+        </div>
+      </section>
+    `;
+
+  }
+
+
+  /* =========================
+     PENDING
+     ========================= */
+
+  if(pendingCount){
+
+    html+=`
+      <section class="assistant-section">
+
+        <div class="assistant-section-title">
+          <span>⏳</span>
+          <div>
+            <h3>Menunggu Persetujuan</h3>
+            <small>Manual attendance</small>
+          </div>
+        </div>
+
+        <div class="assistant-pending-box">
+          ⚠️ Ada <strong>${nf(pendingCount)}</strong>
+          pengajuan attendance manual yang belum disetujui Manager/Admin.
+        </div>
+
+      </section>
+    `;
+
+  }
+
+
+  /* =========================
+     SUPERMARKET
+     ========================= */
+
+  html+=`
+    <section class="assistant-section">
+
+      <div class="assistant-section-title">
+        <span>🏪</span>
+        <div>
+          <h3>Rekap Supermarket</h3>
+          <small>${nf(supermarketCount)} supermarket</small>
+        </div>
+      </div>
+
+      <div class="assistant-recap-grid">
+  `;
+
+  Object.entries(tradeMap).forEach(([trade,x])=>{
+
+    html+=`
+      <div class="assistant-recap-card">
+
+        <div class="assistant-recap-title">
+          🏪 ${esc(trade||"-")}
+        </div>
+
+        <div class="assistant-recap-values">
+
+          <div>
+            <small>Outlet</small>
+            <strong>${nf(x.outlet)}</strong>
+          </div>
+
+          <div>
+            <small>Perlu Refill</small>
+            <strong>${nf(x.refill)}</strong>
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+  });
+
+  html+=`
+      </div>
+    </section>
+  `;
+
+
+  /* =========================
+     WILAYAH
+     ========================= */
+
+  html+=`
+    <section class="assistant-section">
+
+      <div class="assistant-section-title">
+        <span>🌍</span>
+        <div>
+          <h3>Rekap Wilayah</h3>
+          <small>Coverage outlet berdasarkan wilayah</small>
+        </div>
+      </div>
+
+      <div class="assistant-recap-grid">
+  `;
+
+  Object.entries(regionMap).forEach(([region,x])=>{
+
+    html+=`
+      <div class="assistant-recap-card">
+
+        <div class="assistant-recap-title">
+          📍 ${esc(region||"-")}
+        </div>
+
+        <div class="assistant-recap-values">
+
+          <div>
+            <small>Outlet</small>
+            <strong>${nf(x.outlet)}</strong>
+          </div>
+
+          <div>
+            <small>Refill</small>
+            <strong>${nf(x.refill)}</strong>
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+  });
+
+  html+=`
+      </div>
+    </section>
+  `;
+
+
+  /* =========================
+     REKOMENDASI
+     ========================= */
+
+  html+=`
+    <section class="assistant-section">
+
+      <div class="assistant-section-title">
+        <span>💡</span>
+        <div>
+          <h3>Rekomendasi Assistant</h3>
+          <small>Tindakan yang disarankan</small>
+        </div>
+      </div>
+
+      <div class="assistant-recommendations">
+  `;
+
+  if(refillOutlets.length){
+
+    html+=`
+      <div class="assistant-recommendation danger">
+        <span>🚨</span>
+        <div>
+          <strong>Prioritaskan refill</strong>
+          <p>
+            ${nf(refillOutlets.length)} outlet memiliki produk
+            di bawah atau sama dengan minimum stock.
+          </p>
+        </div>
+      </div>
+    `;
+
+  }else{
+
+    html+=`
+      <div class="assistant-recommendation success">
+        <span>✅</span>
+        <div>
+          <strong>Stock aman</strong>
+          <p>
+            Tidak ada outlet yang terdeteksi membutuhkan refill.
+          </p>
+        </div>
+      </div>
+    `;
+
+  }
+
+  if(belum){
+
+    html+=`
+      <div class="assistant-recommendation warning">
+        <span>👥</span>
+        <div>
+          <strong>Cek kehadiran</strong>
+          <p>
+            ${nf(belum)} karyawan belum memiliki attendance resmi
+            pada periode/filter yang dipilih.
+          </p>
+        </div>
+      </div>
+    `;
+
+  }
+
+  if(pendingCount){
+
+    html+=`
+      <div class="assistant-recommendation warning">
+        <span>⏳</span>
+        <div>
+          <strong>Approval diperlukan</strong>
+          <p>
+            ${nf(pendingCount)} attendance manual masih menunggu
+            persetujuan Manager/Admin.
+          </p>
+        </div>
+      </div>
+    `;
+
+  }
+
+  html+=`
+      </div>
+    </section>
+  `;
+
+
+  el.innerHTML=html;
+}
 }
 function renderWhatsAppSettings(){
   const s=db.whatsapp||{

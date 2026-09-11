@@ -645,6 +645,9 @@ let cloudDB=null, cloudUnsubs=[], cloudReady=false, cloudApplying=false, cloudDi
    Data is split into Firestore collections so different users can work at the same time
    without repeatedly replacing one giant erp/main document.
 */
+  const WA_WORKER_URL = "https://yogulato-wa-bot.mrifkipgri15.workers.dev/";
+const WA_GROUP_ID = "120363364628064450@g.us";
+
 const firebaseConfig = {
   apiKey: "AIzaSyDmMVys25fhL9tsqi42ABpXDVErVglIIDc",
   authDomain: "soursallysystem.firebaseapp.com",
@@ -684,7 +687,17 @@ if(!Array.isArray(db.users)||!db.users.length){
 }
 db.outlets=(db.outlets||[]).map(o=>({products:PRODUCTS,...o}));
 
-if(!db.whatsapp) db.whatsapp={groupName:"Grup Operasional Yogulato",groupLink:"",sendTime:"15:30",lateAfter:"09:00",autoEnabled:false,webhook:"",format:"all",lastSentKey:""};
+if(!db.whatsapp) db.whatsapp={
+  groupName:"Grup Operasional Yogulato",
+  groupLink:"",
+  groupId:WA_GROUP_ID,
+  sendTime:"15:30",
+  lateAfter:"09:00",
+  autoEnabled:false,
+  webhook:WA_WORKER_URL,
+  format:"all",
+  lastSentKey:""
+};
 cloudBootstrapping=false;
 function wireFilterCascades(){["global","att","stock","inv","assistant"].forEach(p=>{let r=document.getElementById(p+"Region"),t=document.getElementById(p+"Trade");if(!r||!t||r.dataset.wired)return;r.dataset.wired="1";r.addEventListener("change",()=>{mountFilters();renderAll()});t.addEventListener("change",()=>{mountFilters();renderAll()});let o=document.getElementById(p+"Outlet");if(o)o.addEventListener("change",()=>renderAll())})}
 
@@ -726,7 +739,7 @@ function mergeSnapshot(name,changes){
       else if(old<0)target.push(val);
     }else if(name==="minimum"){
       if(ch.type==="removed") delete db.minimum[d.key]; else db.minimum[d.key]=Number(d.value||0);
-  }else if(name==="settings"){
+}else if(name==="settings"){
 
   if(ch.type!=="removed"){
 
@@ -734,7 +747,9 @@ function mergeSnapshot(name,changes){
 
     db.whatsapp={
       ...(db.whatsapp||{}),
-      ...incoming
+      ...incoming,
+      groupId: incoming.groupId || db.whatsapp?.groupId || WA_GROUP_ID,
+      webhook: incoming.webhook || db.whatsapp?.webhook || WA_WORKER_URL
     };
 
     localStorage.setItem(
@@ -743,6 +758,8 @@ function mergeSnapshot(name,changes){
     );
 
   }
+
+}
 
 }else{
       const target=db[name]||[];
@@ -760,16 +777,50 @@ function withTimeout(promise, ms=8000){
 }
 async function readCloudState(){
   let found=false;
+
   for(const [name,getter] of cloudCollections()){
-    const snap=await withTimeout(cloudDB.collection("erpData").doc(name).collection("items").get(),5000);
+    const snap=await withTimeout(
+      cloudDB.collection("erpData").doc(name).collection("items").get(),
+      5000
+    );
+
     if(snap.empty) continue;
+
     found=true;
-    if(name==="regions") db.regions=snap.docs.map(d=>d.data().value).filter(Boolean);
-    else if(name==="trades") db.trades=snap.docs.map(d=>d.data().value).filter(Boolean);
-    else if(name==="minimum") {db.minimum={};snap.docs.forEach(d=>{const x=d.data();db.minimum[x.key]=Number(x.value||0)})}
-    else if(name==="settings") {const d=snap.docs.find(x=>x.id==="whatsapp");if(d)db.whatsapp=localFromDoc(name,d.data())}
-    else db[name]=snap.docs.map(d=>localFromDoc(name,d.data()));
+
+    if(name==="regions")
+      db.regions=snap.docs.map(d=>d.data().value).filter(Boolean);
+
+    else if(name==="trades")
+      db.trades=snap.docs.map(d=>d.data().value).filter(Boolean);
+
+    else if(name==="minimum"){
+      db.minimum={};
+      snap.docs.forEach(d=>{
+        const x=d.data();
+        db.minimum[x.key]=Number(x.value||0)
+      });
+    }
+
+    else if(name==="settings"){
+      const d=snap.docs.find(x=>x.id==="whatsapp");
+
+      if(d){
+        const incoming = localFromDoc(name,d.data());
+
+        db.whatsapp = {
+          ...(db.whatsapp || {}),
+          ...incoming,
+          groupId: incoming.groupId || WA_GROUP_ID,
+          webhook: incoming.webhook || WA_WORKER_URL
+        };
+      }
+    }
+
+    else
+      db[name]=snap.docs.map(d=>localFromDoc(name,d.data()));
   }
+
   return found;
 }
 async function writeCloudCollection(name,getter){
@@ -1662,7 +1713,7 @@ const s={
   groupId:
     cloudWA.groupId ||
     localWA.groupId ||
-    "120363364628064450@g.us",
+    WA_GROUP_ID,
 
   sendTime:
     cloudWA.sendTime ||
@@ -1682,7 +1733,7 @@ const s={
   webhook:
     cloudWA.webhook ||
     localWA.webhook ||
-    "",
+    WA_WORKER_URL,
 
   format:
     cloudWA.format ||
@@ -1721,9 +1772,9 @@ const s={
   );
 
   set(
-    "waWebhook",
-    s.webhook || ""
-  );
+  "waWebhook",
+  s.webhook || WA_WORKER_URL
+);
 
   set(
     "waFormat",
@@ -1775,7 +1826,7 @@ function saveWhatsAppSettings(){
       "",
 
     groupId:
-      "120363364628064450@g.us",
+        WA_GROUP_ID,
 
     sendTime:
       document.getElementById("waSendTime")?.value ||
@@ -1789,8 +1840,9 @@ function saveWhatsAppSettings(){
       !!document.getElementById("waAutoEnabled")?.checked,
 
     webhook:
-      document.getElementById("waWebhook")?.value ||
-      "",
+      document.getElementById("waWebhook")?.value?.trim() ||
+      db.whatsapp?.webhook ||
+      WA_WORKER_URL,
 
     format:
       document.getElementById("waFormat")?.value ||
@@ -1843,7 +1895,7 @@ function getWhatsAppSettings(){
 
     groupId:
       db.whatsapp?.groupId ||
-      "120363364628064450@g.us",
+      WA_GROUP_ID,
 
     sendTime:
       db.whatsapp?.sendTime ||

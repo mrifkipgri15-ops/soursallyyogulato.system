@@ -1908,7 +1908,7 @@ function getWhatsAppSettings(){
 
     webhook:
       db.whatsapp?.webhook ||
-      "",
+      WA_WORKER_URL,
 
     format:
       db.whatsapp?.format ||
@@ -2065,7 +2065,7 @@ const payload={
   try{
     setWhatsAppBotStatus("🟡 Mengirim laporan ke Bot WhatsApp...");
 
-    const response=await fetch(s.webhook,{
+    const response=await fetch(s.webhook || WA_WORKER_URL,{
       method:"POST",
       headers:{
         "Content-Type":"application/json"
